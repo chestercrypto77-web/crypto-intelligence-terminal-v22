@@ -25,4 +25,4 @@ jobs:
       - name: Run V22 Neon persistence test
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python scripts/v22_neon_smoke.py
+        run: python scripts/v22_neon_smoke_test.py
