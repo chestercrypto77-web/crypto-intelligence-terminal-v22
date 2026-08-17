@@ -80,8 +80,8 @@ Owns deterministic market logic, contracts and persistence semantics. Must be ru
 ### Restate (future Stage 5)
 Owns scheduling, durable workflow progress, retries and recovery. It does not own domain memory.
 
-### Lambda (future Stage 4)
-Disposable Python execution only. No critical state is permitted to live only in a Lambda process.
+### Lambda (Stage 4 adapter implemented)
+Disposable Python execution only. No critical state is permitted to live only in a Lambda process. V22.4 adds a thin handler and strict invocation/environment contract; live AWS deployment remains intentionally deferred until the collector/runtime input path is proven fresh.
 
 ### Neon
 Canonical domain source of truth: evidence, observations, coverage, findings, episodes, outcomes and provenance.
@@ -127,7 +127,8 @@ CI, release validation and independent watchdog. It is not treated as proof of s
 
 - **V22.1 / Stage 0-1:** frozen contracts, relational memory schema, idempotency and coverage truth.
 - **V22.2 / Stage 2:** deterministic Brain Core over the existing 5m/15m observer snapshots. It validates freshness, stores canonical evidence, calculates objective observations and finalises genuine coverage.
-- **Not yet activated:** Restate, Lambda, external Neon, AI agents/models and pgvector retrieval.
+- **V22.4 / Stage 4:** thin AWS Lambda-compatible adapter with retry-safe scheduled invocation, environment-only runtime configuration, time-budget preflight and replaceable collector boundary.
+- **Not yet activated:** live AWS Lambda deployment, Restate, external Neon, AI agents/models and pgvector retrieval.
 
 
 
@@ -148,3 +149,17 @@ The deterministic pipeline now proves these semantics:
 - repeated identical failure evidence => idempotent ledger entry.
 
 Stage 3 still owns no retry timing. Restate will later use these failure classifications and cycle states to decide when/how execution is retried.
+
+
+## V22.4 / Stage 4 — Lambda Adapter
+
+Stage 4 wraps the deterministic Brain in a disposable runtime boundary without moving domain logic into Lambda. The handler validates only the invocation contract, builds runtime dependencies from environment, and calls `DeterministicBrainCore`.
+
+Key rules:
+
+- `scheduled_at` is mandatory and timezone-aware; Lambda retries must resolve to the same canonical cycle.
+- database/data-root configuration never comes from the event payload; secrets remain environment configuration.
+- a minimum remaining-time check refuses to begin a cycle too close to runtime expiry.
+- processing exceptions escape the handler so future durable orchestration can observe/retry the failure.
+- warm execution may cache configuration, but no durable market state lives in Lambda memory.
+- the collector is explicitly replaceable. V22.4 still uses `LegacySnapshotCollector` for local equivalence testing; live Lambda deployment is blocked until a fresh runtime market-data source is supplied.

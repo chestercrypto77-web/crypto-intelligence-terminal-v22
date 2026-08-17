@@ -1,0 +1,18 @@
+V22.4 CLEAN ESSENTIAL UPDATE — LAMBDA ADAPTER
+
+1. Extract the ZIP.
+2. Open the existing GitHub repository: crypto-intelligence-terminal-v22.
+3. Stay on branch: main.
+4. Add file -> Upload files.
+5. Upload every file/folder INSIDE the extracted ZIP over the existing repository.
+6. Do NOT delete the repository first.
+7. Commit directly to main.
+
+Suggested commit message:
+Install V22.4 Lambda Adapter
+
+IMPORTANT:
+- This release does NOT require an AWS account yet.
+- Do NOT deploy Dockerfile.v22/render.yaml as the V22 runtime.
+- Do NOT create Lambda manually yet.
+- V22.4 proves the Lambda adapter locally before account/deployment work.

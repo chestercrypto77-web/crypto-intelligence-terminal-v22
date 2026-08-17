@@ -1,0 +1,48 @@
+{
+  "release": "22.4.0",
+  "type": "clean-essential-overlay",
+  "base_required": "V22.3.0",
+  "file_count": 10,
+  "files": [
+    {
+      "path": "README_V22_4.md",
+      "sha256": "8afdd3691a4fd00877b437bde18c6c7c553b2c977100db7284263c6fcc163a4e"
+    },
+    {
+      "path": "UPLOAD_INSTRUCTIONS_V22_4.txt",
+      "sha256": "00e7a907ed6030b3ae1222dbd73ba6a1aab40e4261365988b612e083976e6900"
+    },
+    {
+      "path": "V22_ARCHITECTURE.md",
+      "sha256": "eb8c94ad2e6ee9bf95dac0eb3a01ba2f0640c4c0f262255a4dd98b3827a829fe"
+    },
+    {
+      "path": "scripts/v22_lambda_smoke_test.py",
+      "sha256": "725d437c5c3c360db59d700354c7eac25b55696b990b974bdf1b009e9266383f"
+    },
+    {
+      "path": "v22/__init__.py",
+      "sha256": "bf2f728ad4dd0d82b25f9559f58185950b1cac321af850429bfcff6751590c04"
+    },
+    {
+      "path": "v22/runtime/__init__.py",
+      "sha256": "63af188bed54a3a79eb3405e34ca6535ec197c8f5128051a89006d4209d53d09"
+    },
+    {
+      "path": "v22/runtime/lambda_adapter.py",
+      "sha256": "962aa6d14e8e396c431dbc200bdf71442429b79a79fbd014c047f5537e72563a"
+    },
+    {
+      "path": "v22/tests/test_stage4_lambda_adapter.py",
+      "sha256": "9ea9ecdb85240b9f8649c3440f6b958a81155883c6eec84ef616c68e23e67b96"
+    },
+    {
+      "path": "V22_4_VALIDATION_REPORT.json",
+      "sha256": "808d9ad1eb7967265829f373c77f47febf489cf075886cc07f4a9fc453da2be5"
+    },
+    {
+      "path": "V22_4_UPDATE_MANIFEST.json",
+      "sha256": "SELF"
+    }
+  ]
+}

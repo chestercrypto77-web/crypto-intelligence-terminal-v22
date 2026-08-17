@@ -1,0 +1,28 @@
+{
+  "release": "22.4.0",
+  "stage": "Stage 4 - Lambda Adapter",
+  "status": "passed",
+  "validated_at_utc": "2026-08-17T05:26:37.243583+00:00",
+  "tests": {
+    "v22_pytest": "37/37 passed",
+    "python_compileall": "passed",
+    "release_smoke_test": "passed",
+    "preflight_release": "passed; 134 Python files checked; persistent runtime data protected",
+    "stage1_regression": "passed",
+    "stage3_failure_regression": "passed",
+    "lambda_local_smoke": "passed; cold/warm retry produced one canonical cycle",
+    "direct_vs_lambda_equivalence": "passed",
+    "time_budget_guard": "passed",
+    "payload_secret_rejection": "passed",
+    "ai_calls": "0",
+    "live_aws_deployment": "not performed - intentionally out of Stage 4 scope",
+    "live_neon": "not performed - credentials not required for Stage 4"
+  },
+  "deployment_gate": {
+    "aws_account_required_now": false,
+    "restate_required_now": false,
+    "ai_required_now": false,
+    "live_lambda_market_runtime_ready": false,
+    "reason": "LegacySnapshotCollector remains a transitional local input. A fresh runtime market-data collector/input path must be proven before live Lambda deployment."
+  }
+}
