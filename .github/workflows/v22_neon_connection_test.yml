@@ -1,0 +1,28 @@
+name: V22 Neon Connection Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  neon-connection-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install PostgreSQL driver
+        run: python -m pip install "psycopg[binary]>=3.2,<4"
+
+      - name: Run V22 Neon persistence test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/v22_neon_smoke.py
