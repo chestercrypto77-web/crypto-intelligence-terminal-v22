@@ -41,7 +41,7 @@ class DeterministicBrainCore:
     def __init__(
         self,
         repo: BrainRepository,
-        collector: LegacySnapshotCollector,
+        collector: Any,
         *,
         software_commit: str | None = None,
         fault_injector: Callable[[FailureStage, str | None], None] | None = None,
@@ -53,7 +53,7 @@ class DeterministicBrainCore:
         self.provenance = Provenance(
             brain_version=__version__,
             software_commit=software_commit or os.getenv("GITHUB_SHA", "local"),
-            calculation_version="stage3-v1",
+            calculation_version="stage5-v1",
             schema_version="003",
         )
 
@@ -107,7 +107,7 @@ class DeterministicBrainCore:
             if stored["status"] == CycleStatus.SCHEDULED.value:
                 self.repo.transition_cycle(cycle_id, CycleStatus.STARTED)
                 self.repo.transition_cycle(cycle_id, CycleStatus.COLLECTING)
-            self._capture(cycle_id, FailureStage.COLLECTION, "LegacySnapshotCollector", exc)
+            self._capture(cycle_id, FailureStage.COLLECTION, self.collector.__class__.__name__, exc)
             self._mark_failed(cycle_id, "collection failed")
             raise
 
@@ -143,7 +143,7 @@ class DeterministicBrainCore:
                 reason = "source unavailable" if asset_id in batch.unavailable_assets else "requested asset missing from snapshot"
                 failures[asset_id] = reason
                 exc = RuntimeError(reason)
-                self._capture(cycle_id, FailureStage.COLLECTION, "LegacySnapshotCollector", exc, asset_id=asset_id)
+                self._capture(cycle_id, FailureStage.COLLECTION, self.collector.__class__.__name__, exc, asset_id=asset_id)
                 try:
                     self._trip(FailureStage.COVERAGE_PERSIST, asset_id)
                     self.repo.upsert_coverage(CoverageContract(

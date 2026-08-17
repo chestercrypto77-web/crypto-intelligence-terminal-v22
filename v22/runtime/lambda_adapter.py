@@ -9,7 +9,7 @@ from typing import Any, Callable, Mapping, Protocol
 
 from v22 import __version__
 from v22.contracts import CycleType
-from v22.core import DeterministicBrainCore, LegacySnapshotCollector
+from v22.core import DeterministicBrainCore, LegacySnapshotCollector, LiveEvidenceCollector
 from v22.storage import BrainRepository, Database
 
 
@@ -59,7 +59,7 @@ class LambdaRuntime:
         )
         return {
             "ok": result.status in {"COMPLETED", "PARTIAL"},
-            "adapter_version": "stage4-v1",
+            "adapter_version": "stage5-v1",
             "brain_version": __version__,
             "cycle": asdict(result),
         }
@@ -87,11 +87,17 @@ def runtime_from_environment() -> LambdaRuntime:
     if minimum_remaining_ms < 1000:
         raise InvocationRejected("V22_LAMBDA_MIN_REMAINING_MS must be at least 1000")
 
+    collector_mode = os.getenv("V22_COLLECTOR_MODE", "snapshot").strip().lower()
+    collector_map = {"snapshot": LegacySnapshotCollector, "live": LiveEvidenceCollector}
+    if collector_mode not in collector_map:
+        raise InvocationRejected("V22_COLLECTOR_MODE must be snapshot or live")
+
     return LambdaRuntime(
         database_url=database_url,
         data_root=data_root,
         minimum_remaining_ms=minimum_remaining_ms,
         auto_migrate=os.getenv("V22_AUTO_MIGRATE", "0") == "1",
+        collector_factory=collector_map[collector_mode],
     )
 
 

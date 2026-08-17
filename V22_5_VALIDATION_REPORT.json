@@ -1,0 +1,23 @@
+{
+  "version": "22.5.0",
+  "status": "passed",
+  "tests": {"v22_pytest": "46/46 passed"},
+  "checks": [
+    "full Python compilation",
+    "legacy release/navigation smoke",
+    "protected runtime-data preflight",
+    "Stage 1 memory regression",
+    "Stage 3 forced persistence-failure regression",
+    "Stage 4 Lambda cold/warm/idempotency regression",
+    "Stage 5 synthetic 15m live cycle",
+    "Stage 5 synthetic 5m live cycle",
+    "provider outage isolation",
+    "malformed provider response handling",
+    "stale live-bar rejection",
+    "rate-limit stop behaviour",
+    "snapshot/live collector interchangeability",
+    "zero AI calls"
+  ],
+  "external_live_network_execution": "not performed in build sandbox; HTTP behavior is fixture-tested and endpoint contract checked against official provider documentation",
+  "production_activation": false
+}

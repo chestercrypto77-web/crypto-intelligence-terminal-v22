@@ -163,3 +163,13 @@ Key rules:
 - processing exceptions escape the handler so future durable orchestration can observe/retry the failure.
 - warm execution may cache configuration, but no durable market state lives in Lambda memory.
 - the collector is explicitly replaceable. V22.4 still uses `LegacySnapshotCollector` for local equivalence testing; live Lambda deployment is blocked until a fresh runtime market-data source is supplied.
+
+## V22.5 — Live Evidence Collector boundary
+
+Stage 5 introduces a replaceable live market evidence adapter without changing the deterministic Brain contract.
+
+`LiveEvidenceCollector -> CollectionBatch -> EvidenceValidator -> DeterministicBrainCore -> BrainRepository`
+
+The initial live provider is Binance public market-data-only REST. The provider is intentionally hidden behind the collector boundary so a future source or multi-source collector can replace it without changing Lambda, cycle control, deterministic calculations, or memory contracts.
+
+Snapshot mode remains available for tests/fallback. Lambda selects the collector using `V22_COLLECTOR_MODE=snapshot|live`; live activation is deferred until the controlled deployment stage.

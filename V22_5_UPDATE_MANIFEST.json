@@ -1,0 +1,12 @@
+{
+  "version": "22.5.0",
+  "release": "Live Evidence Collector",
+  "stage": 5,
+  "activation": "not_live",
+  "ai_enabled": false,
+  "external_accounts_required_for_upload": false,
+  "collector_modes": ["snapshot", "live"],
+  "default_collector_mode": "snapshot",
+  "live_provider": "binance-public-market-data",
+  "live_credentials_required": false
+}

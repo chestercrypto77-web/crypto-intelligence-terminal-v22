@@ -1,0 +1,10 @@
+V22.5 CLEAN ESSENTIAL UPDATE — LIVE EVIDENCE COLLECTOR
+
+1. Extract the ZIP.
+2. Upload every extracted item over the existing crypto-intelligence-terminal-v22 repository.
+3. Do NOT delete the repository or existing data first.
+4. Commit directly to main.
+5. Suggested commit: Install V22.5 Live Evidence Collector
+
+No AWS, Restate, Neon, Gemini, Binance account, or API key is required for this upload.
+Existing workflows remain unchanged. Live mode is NOT activated by this upload.
