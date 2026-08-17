@@ -1,0 +1,12 @@
+V22.2 — CLEAN ESSENTIAL UPDATE
+
+This is Stage 2: Deterministic Brain Core.
+
+1. Extract the ZIP.
+2. Upload every extracted file/folder over the existing crypto-intelligence-terminal-1 repository.
+3. Do NOT delete the repository first.
+4. Commit directly to main with a message such as: Install V22.2 Deterministic Brain Core
+5. Existing live data JSON files are not included and remain protected.
+
+No AWS, Restate, Neon or AI account setup is required for V22.2.
+Existing Streamlit layout and live GitHub observer workflows are intentionally unchanged.

@@ -1,0 +1,20 @@
+{
+  "version": "22.2.0",
+  "stage": "Stage 2 Deterministic Brain Core",
+  "status": "passed",
+  "tests": {
+    "v22_pytest": "19/19 passed",
+    "python_compileall": "passed",
+    "legacy_release_smoke": "passed",
+    "legacy_preflight": "passed - 126 python files checked",
+    "stage1_regression_smoke": "passed",
+    "stage2_cli_15m": "passed - COMPLETED; 13 evidence; 5 observations",
+    "stage2_cli_5m": "passed - COMPLETED; 19 evidence; 6 observations",
+    "stale_data_truth": "passed - stale asset cannot count as analysed",
+    "partial_coverage_truth": "passed - unavailable asset finalises PARTIAL",
+    "retry_idempotency": "passed",
+    "ai_activation": "disabled / zero AI calls"
+  },
+  "external_neon_test": "not run - no credentials required at this stage",
+  "external_orchestration_test": "not applicable - Restate/Lambda intentionally not activated"
+}

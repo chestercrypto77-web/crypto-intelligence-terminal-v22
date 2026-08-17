@@ -1,0 +1,20 @@
+{
+  "version": "22.2.0",
+  "type": "clean essential overlay",
+  "file_count": 13,
+  "files": [
+    "README_V22_2.md",
+    "UPLOAD_INSTRUCTIONS_V22_2.txt",
+    "V22_2_VALIDATION_REPORT.json",
+    "V22_ARCHITECTURE.md",
+    "release_manifest_v22.json",
+    "scripts/v22_deterministic_cycle.py",
+    "v22/__init__.py",
+    "v22/core/__init__.py",
+    "v22/core/deterministic.py",
+    "v22/core/pipeline.py",
+    "v22/core/sources.py",
+    "v22/core/validation.py",
+    "v22/tests/test_stage2_deterministic_core.py"
+  ]
+}

@@ -121,3 +121,11 @@ CI, release validation and independent watchdog. It is not treated as proof of s
 - AI finding contract rejects findings without evidence references.
 - All timestamps are timezone-aware UTC-compatible.
 - Existing V22 foundation tests and project release validation continue to pass.
+
+
+## Implementation status
+
+- **V22.1 / Stage 0-1:** frozen contracts, relational memory schema, idempotency and coverage truth.
+- **V22.2 / Stage 2:** deterministic Brain Core over the existing 5m/15m observer snapshots. It validates freshness, stores canonical evidence, calculates objective observations and finalises genuine coverage.
+- **Not yet activated:** Restate, Lambda, external Neon, AI agents/models and pgvector retrieval.
+

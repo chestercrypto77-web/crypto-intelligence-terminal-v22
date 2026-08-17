@@ -1,9 +1,10 @@
 {
-  "version": "22.1.0",
-  "release": "Brain Contracts + Neon Memory Foundation",
-  "architecture_stage": "Stage 0 + Stage 1",
-  "mode": "FOUNDATION / SHADOW ONLY",
+  "version": "22.2.0",
+  "release": "Deterministic Brain Core",
+  "architecture_stage": "Stage 2",
+  "mode": "DETERMINISTIC / LOCAL-NEON-READY",
   "authoritative_store_target": "Neon PostgreSQL; SQLite local validation fallback",
+  "source_boundary": "existing 5m/15m observer snapshots via strict adapter",
   "external_services_activated": false,
   "restate_activated": false,
   "lambda_activated": false,
@@ -11,9 +12,10 @@
   "real_money_execution": false,
   "critical_guarantees": [
     "scheduled execution is not treated as proof of analysis",
-    "cycle completion requires durable expected-asset coverage",
-    "evidence and deterministic observations are separate",
-    "persistent writes are retry-safe",
-    "AI findings must reference evidence"
+    "stale or unavailable assets cannot count as genuine deterministic coverage",
+    "raw evidence and derived observations remain separate",
+    "same scheduled cycle is retry-safe",
+    "AI findings are not created in Stage 2",
+    "incomplete expected-asset coverage finalises PARTIAL"
   ]
 }
