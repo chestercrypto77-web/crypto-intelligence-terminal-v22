@@ -1,0 +1,8 @@
+{
+  "version": "22.0.0",
+  "release": "Always-On Brain Foundation",
+  "mode": "SHADOW ONLY",
+  "authoritative_store": "PostgreSQL in production; SQLite local test fallback",
+  "critical_change": "GitHub Actions no longer intended as long-term observation heartbeat",
+  "real_money_execution": false
+}
