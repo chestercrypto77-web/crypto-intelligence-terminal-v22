@@ -1,5 +1,6 @@
 from __future__ import annotations
 import argparse, json, signal, time, uuid
+from v22 import __version__
 from v22.brain.config import SETTINGS
 from v22.storage.database import Database
 from v22.brain.heartbeat import Heartbeat
@@ -57,7 +58,7 @@ def main():
     db=Database(SETTINGS.database_url); db.migrate()
     if args.once:
         print(json.dumps(cycle(db),indent=2)); return 0
-    print(json.dumps({"v22":"22.1.0","mode":SETTINGS.mode,"instance":SETTINGS.instance_id,"status":"STARTING"}))
+    print(json.dumps({"v22":__version__,"mode":SETTINGS.mode,"instance":SETTINGS.instance_id,"status":"STARTING"}))
     while not STOP:
         try: cycle(db)
         except Exception as e:

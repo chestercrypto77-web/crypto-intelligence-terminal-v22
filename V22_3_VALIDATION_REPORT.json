@@ -1,0 +1,25 @@
+{
+  "version": "22.3.0",
+  "stage": "Stage 3 Failure Engine",
+  "status": "passed",
+  "tests": {
+    "v22_pytest": "29/29 passed",
+    "python_compileall": "passed",
+    "legacy_release_smoke": "passed",
+    "legacy_preflight": "passed - 130 python files checked",
+    "stage1_regression_smoke": "passed",
+    "stage3_failure_smoke": "passed - injected observation persistence failure finalised PARTIAL with zero analysed assets",
+    "missing_source_truth": "passed - FAILED and audited",
+    "malformed_json_truth": "passed - FAILED and audited",
+    "stale_data_truth": "passed - PARTIAL and not analysed",
+    "partial_coverage_truth": "passed - unavailable expected asset audited",
+    "calculation_failure_truth": "passed - asset cannot claim completion",
+    "database_write_failure_truth": "passed - persistence failure audited and PARTIAL",
+    "finalisation_failure_truth": "passed - whole cycle FAILED",
+    "duplicate_execution_truth": "passed - no second canonical cycle",
+    "failure_idempotency": "passed",
+    "ai_activation": "disabled / zero AI calls"
+  },
+  "external_neon_test": "not run - no credentials required at this stage",
+  "external_orchestration_test": "not applicable - Restate/Lambda intentionally not activated"
+}

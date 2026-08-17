@@ -1,21 +1,22 @@
 {
-  "version": "22.2.0",
-  "release": "Deterministic Brain Core",
-  "architecture_stage": "Stage 2",
-  "mode": "DETERMINISTIC / LOCAL-NEON-READY",
+  "version": "22.3.0",
+  "release": "Failure Engine",
+  "architecture_stage": "Stage 3",
+  "mode": "DETERMINISTIC / FAILURE-TESTED / LOCAL-NEON-READY",
   "authoritative_store_target": "Neon PostgreSQL; SQLite local validation fallback",
-  "source_boundary": "existing 5m/15m observer snapshots via strict adapter",
   "external_services_activated": false,
   "restate_activated": false,
   "lambda_activated": false,
   "ai_activated": false,
   "real_money_execution": false,
   "critical_guarantees": [
-    "scheduled execution is not treated as proof of analysis",
-    "stale or unavailable assets cannot count as genuine deterministic coverage",
-    "raw evidence and derived observations remain separate",
-    "same scheduled cycle is retry-safe",
-    "AI findings are not created in Stage 2",
-    "incomplete expected-asset coverage finalises PARTIAL"
+    "failure is persisted as structured evidence wherever persistence remains reachable",
+    "missing or malformed source snapshots cannot claim successful analysis",
+    "stale or unavailable assets cannot count as genuine coverage",
+    "calculation and per-asset persistence failures finalise PARTIAL rather than COMPLETED",
+    "cycle finalisation failure forces FAILED",
+    "duplicate in-progress execution cannot create a second canonical cycle",
+    "failure ledger inserts are retry-safe",
+    "AI remains disabled in Stage 3"
   ]
 }

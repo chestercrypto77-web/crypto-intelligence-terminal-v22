@@ -30,6 +30,12 @@ def main() -> int:
         "v22/migrations/002_brain_memory_postgres.sql",
         "v22/tests/test_stage1_brain_memory.py",
         "scripts/v22_stage1_smoke_test.py",
+        "README_V22_3.md",
+        "v22/failure/engine.py",
+        "v22/migrations/003_failure_engine_sqlite.sql",
+        "v22/migrations/003_failure_engine_postgres.sql",
+        "v22/tests/test_stage3_failure_engine.py",
+        "scripts/v22_stage3_failure_smoke_test.py",
     ]
 
     missing = [name for name in required if not (ROOT / name).exists()]

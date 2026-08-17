@@ -1,0 +1,14 @@
+V22.3 FAILURE ENGINE — CLEAN OVERLAY
+
+1. Extract the ZIP.
+2. Open the existing GitHub repository: crypto-intelligence-terminal-v22.
+3. Stay on branch main.
+4. Add file -> Upload files.
+5. Upload every item INSIDE the extracted ZIP over the existing repository.
+6. Do not delete the repository first.
+7. Commit directly to main.
+
+Suggested commit message:
+Install V22.3 Failure Engine
+
+No AWS, Restate, Neon or Gemini account changes are required for V22.3.

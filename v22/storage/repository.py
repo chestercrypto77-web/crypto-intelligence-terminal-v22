@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 from typing import Any
+import uuid
 
 from v22.contracts import (
     CoverageContract,
@@ -225,6 +226,50 @@ class BrainRepository:
               updated_at=NOW()""",
         )
         self.db.execute(sql, values)
+
+
+    def record_failure_event(self, event) -> str:
+        failure_id = str(uuid.uuid4())
+        idempotency_key = f"{event.cycle_id}:{event.asset_id or ''}:{event.stage.value}:{event.fingerprint}"
+        values = (
+            failure_id,
+            idempotency_key,
+            event.cycle_id,
+            event.asset_id,
+            event.stage.value,
+            event.component,
+            event.error_type,
+            event.message,
+            event.severity.value,
+            event.retryable,
+            event.fingerprint,
+            _iso(event.occurred_at),
+            _dump(event.details or {}),
+        )
+        sql = self._sql(
+            """INSERT OR IGNORE INTO brain_failure_events(
+                failure_id,idempotency_key,cycle_id,asset_id,stage,component,error_type,
+                message,severity,retryable,fingerprint,occurred_at,details_json
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            """INSERT INTO brain_failure_events(
+                failure_id,idempotency_key,cycle_id,asset_id,stage,component,error_type,
+                message,severity,retryable,fingerprint,occurred_at,details_json
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb)
+            ON CONFLICT(idempotency_key) DO NOTHING""",
+        )
+        self.db.execute(sql, values)
+        ph = "?" if self.db.kind == "sqlite" else "%s"
+        return self.db.scalar(
+            f"SELECT failure_id FROM brain_failure_events WHERE idempotency_key={ph}",
+            (idempotency_key,),
+        )
+
+    def list_failure_events(self, cycle_id: str) -> list[dict]:
+        ph = "?" if self.db.kind == "sqlite" else "%s"
+        return self.db.query(
+            f"SELECT * FROM brain_failure_events WHERE cycle_id={ph} ORDER BY occurred_at, failure_id",
+            (cycle_id,),
+        )
 
     def coverage_summary(self, cycle_id: str) -> dict:
         ph = "?" if self.db.kind == "sqlite" else "%s"

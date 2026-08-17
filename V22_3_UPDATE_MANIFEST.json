@@ -1,0 +1,10 @@
+{
+  "version": "22.3.0",
+  "release": "Failure Engine",
+  "overlay_base": "22.2.0",
+  "upload_style": "clean essential overlay",
+  "delete_existing_repository_first": false,
+  "new_external_accounts_required": false,
+  "live_runtime_data_included": false,
+  "notes": "Only new/changed V22.3 files are included. Existing V22.2 repository content remains in place."
+}

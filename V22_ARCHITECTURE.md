@@ -1,4 +1,4 @@
-# V22 Brain — Frozen Architecture Specification (V22.1)
+# V22 Brain — Frozen Architecture Specification (through V22.3)
 
 ## Decision
 V22 is built as a portable Brain core with replaceable infrastructure. The free-validation target is:
@@ -129,3 +129,22 @@ CI, release validation and independent watchdog. It is not treated as proof of s
 - **V22.2 / Stage 2:** deterministic Brain Core over the existing 5m/15m observer snapshots. It validates freshness, stores canonical evidence, calculates objective observations and finalises genuine coverage.
 - **Not yet activated:** Restate, Lambda, external Neon, AI agents/models and pgvector retrieval.
 
+
+
+## V22.3 / Stage 3 — Failure Engine
+
+Stage 3 makes failure a first-class evidence type before durable external orchestration is introduced. `brain_failure_events` records the failure stage, component, optional asset, error type, severity, retryability, stable fingerprint and details.
+
+The deterministic pipeline now proves these semantics:
+
+- collection failure => cycle `FAILED`;
+- malformed source => cycle `FAILED`;
+- stale/invalid asset => asset incomplete and cycle `PARTIAL` when expected coverage is not achieved;
+- unavailable expected asset => explicit coverage failure;
+- deterministic calculation failure => asset incomplete;
+- evidence/observation/coverage persistence failure => asset cannot claim deterministic completion;
+- finalisation failure => cycle `FAILED`;
+- duplicate in-progress scheduled slot => rejected without a second canonical cycle;
+- repeated identical failure evidence => idempotent ledger entry.
+
+Stage 3 still owns no retry timing. Restate will later use these failure classifications and cycle states to decide when/how execution is retried.
