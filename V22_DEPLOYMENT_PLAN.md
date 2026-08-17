@@ -36,3 +36,17 @@ Only after Stage D passes, migrate V21 market acquisition and decision engines i
 
 ## Rollback
 V21 remains untouched during V22 shadow deployment. If V22 fails, stop the V22 Render services. V21 remains the reference system.
+
+## V22.8 validation deployment — active path
+
+AWS deployment is paused because the proof phase requires no payment method. The active validation path is GitHub Actions -> live collector -> deterministic Brain -> Neon.
+
+Required secret already present: `DATABASE_URL`.
+
+Install/replace the four V22.8 workflow files in `.github/workflows`:
+- `microstructure_5m.yml`
+- `observer_15m.yml`
+- `hourly_signal_recorder.yml`
+- `nightly_deep_learning.yml`
+
+After installation, manually run 5m and 15m once. Verify each workflow succeeds, then verify Neon contains corresponding `runtime_schedule_events`, `brain_cycles`, evidence, observations and coverage. Only then leave schedules active.

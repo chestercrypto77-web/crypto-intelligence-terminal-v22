@@ -1,0 +1,22 @@
+{
+  "version": "22.8.0",
+  "release": "GitHub Free 24/7 Validation Runtime",
+  "overlay_base": "22.7.0",
+  "database_migration": "004_github_validation_runtime",
+  "runtime": "GitHub Actions + Neon",
+  "payment_method_required": false,
+  "ai_enabled": false,
+  "aws_enabled": false,
+  "restate_enabled": false,
+  "workflow_files_replaced": [
+    "microstructure_5m.yml",
+    "observer_15m.yml",
+    "hourly_signal_recorder.yml",
+    "nightly_deep_learning.yml"
+  ],
+  "new_runtime_components": [
+    "v22/runtime/github_validation.py",
+    "scripts/v22_github_cycle.py",
+    "scripts/v22_runtime_report.py"
+  ]
+}

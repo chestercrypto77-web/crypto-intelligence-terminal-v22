@@ -200,3 +200,16 @@ V22.7 turns the Stage-4 adapter into a deployable validation boundary without cr
 
 ### Updated controlled activation sequence
 The architecture blueprint remains unchanged in responsibility boundaries, but implementation gates are now more granular: V22.5 proved fresh live evidence, V22.6 proved real Neon persistence, and V22.7 prepares manual AWS execution. Restate is not introduced until a real `Lambda -> live evidence -> Brain -> Neon` cycle passes independently.
+
+## V22.8 — Free no-card validation runtime
+
+The validation runtime is now GitHub Actions + Neon. This is intentionally a proof environment rather than the final production orchestrator.
+
+- GitHub Actions supplies best-effort timed execution.
+- Neon remains canonical domain memory and execution evidence.
+- `runtime_schedule_events` is independent scheduler evidence.
+- `brain_cycles` remains genuine analysis evidence.
+- Hourly/nightly reports measure expected slots vs durable Brain cycles.
+- Scheduled workflows use read-only repository permissions and do not commit runtime JSON.
+- AWS Lambda remains an optional adapter and is not activated during no-card validation.
+- Restate and AI remain deferred until deterministic 24/7 viability is measured.

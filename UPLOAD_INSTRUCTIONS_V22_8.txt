@@ -1,0 +1,26 @@
+V22.8 — GITHUB FREE 24/7 VALIDATION RUNTIME
+
+PART A — CLEAN REPO OVERLAY
+1. Extract the V22.8 clean essential update ZIP.
+2. Upload the extracted contents over the existing crypto-intelligence-terminal-v22 repository.
+3. Do not delete the repository or data first.
+4. Commit directly to main: Install V22.8 GitHub Free Validation Runtime
+
+PART B — WORKFLOW REPLACEMENT (IMPORTANT)
+Windows/GitHub browser uploads can skip the hidden .github folder.
+1. Open GitHub -> crypto-intelligence-terminal-v22 -> .github -> workflows.
+2. Click Add file -> Upload files.
+3. Extract V22_8_WORKFLOWS_UPLOAD_ONLY.zip.
+4. Upload all four YML files directly into .github/workflows.
+5. They REPLACE the existing same-named workflow files.
+6. Commit directly to main: Activate V22.8 Neon validation workflows
+
+The four active scheduled files are:
+- microstructure_5m.yml
+- observer_15m.yml
+- hourly_signal_recorder.yml
+- nightly_deep_learning.yml
+
+DATABASE_URL must remain a GitHub repository secret. Never paste it into workflow YAML.
+
+After upload, manually run the 5-minute workflow once, then the 15-minute workflow once. Do not activate AWS or AI.

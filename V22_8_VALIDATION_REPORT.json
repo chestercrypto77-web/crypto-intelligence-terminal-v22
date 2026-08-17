@@ -1,0 +1,39 @@
+{
+  "version": "22.8.0",
+  "stage": "GitHub Free 24/7 Validation Runtime",
+  "status": "passed_local_release_validation",
+  "tests": {
+    "v22_pytest": "63/63 passed",
+    "stage8_smoke": "passed",
+    "python_compileall": "passed",
+    "release_smoke_test": "passed",
+    "preflight_release": "passed",
+    "workflow_yaml_parse": "passed",
+    "workflow_read_only_permissions": "passed",
+    "workflow_no_git_runtime_writes": "passed",
+    "workflow_database_secret_reference": "passed",
+    "schedule_offset_checks": "passed",
+    "schedule_event_idempotency": "passed",
+    "expected_slot_gap_accounting": "passed",
+    "ai_activation": "zero",
+    "aws_activation": "zero",
+    "restate_activation": "zero"
+  },
+  "active_validation_schedules_utc": {
+    "micro_5m": "4-59/5 * * * *",
+    "market_15m": "7,22,37,52 * * * *",
+    "hourly_watchdog": "26 * * * *",
+    "nightly_validation": "43 3 * * *"
+  },
+  "external_validation": {
+    "v22_6_neon_connection": "previously proven through GitHub Actions",
+    "v22_8_scheduled_live_cycles": "not run yet; requires workflow activation after upload"
+  },
+  "notes": [
+    "Neon is the canonical runtime persistence layer.",
+    "GitHub workflow success is not treated as proof of genuine market analysis.",
+    "runtime_schedule_events records scheduler execution separately from brain_cycles.",
+    "Hourly/nightly reports compare expected schedule slots with durable Brain cycles.",
+    "Scheduled workflows no longer commit changing data/*.json files back into GitHub."
+  ]
+}
