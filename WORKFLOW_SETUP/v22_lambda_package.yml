@@ -1,0 +1,43 @@
+name: V22 Lambda Package Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-lambda-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Build Linux Lambda deployment ZIP
+        run: python scripts/build_v22_lambda_zip.py --install-deps --output dist/v22-lambda.zip
+
+      - name: Validate package imports
+        run: |
+          python - <<'PY'
+          import zipfile
+          p='dist/v22-lambda.zip'
+          with zipfile.ZipFile(p) as z:
+              names=z.namelist()
+          assert 'v22/runtime/lambda_entry.py' in names
+          assert any(x.startswith('psycopg/') for x in names)
+          print('PASS Lambda ZIP structure', len(names), 'files')
+          PY
+
+      - name: Upload Lambda package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-lambda-python312-x86_64
+          path: dist/v22-lambda.zip
+          if-no-files-found: error
+          retention-days: 7

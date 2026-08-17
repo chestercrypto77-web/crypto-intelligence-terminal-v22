@@ -1,0 +1,23 @@
+{
+  "version": "22.7.0",
+  "base": "22.6.0",
+  "files": [
+    "README_V22_7.md",
+    "UPLOAD_INSTRUCTIONS_V22_7.txt",
+    "V22_7_UPDATE_MANIFEST.json",
+    "V22_7_VALIDATION_REPORT.json",
+    "V22_ARCHITECTURE.md",
+    "WORKFLOW_SETUP/v22_lambda_deploy.yml",
+    "WORKFLOW_SETUP/v22_lambda_package.yml",
+    "aws/v22_github_oidc_deploy_role.yaml",
+    "aws/v22_lambda_foundation.yaml",
+    "scripts/build_v22_lambda_zip.py",
+    "scripts/v22_stage7_lambda_deployment_smoke_test.py",
+    "v22/__init__.py",
+    "v22/runtime/lambda_adapter.py",
+    "v22/runtime/lambda_entry.py",
+    "v22/tests/test_stage7_lambda_deployment.py"
+  ],
+  "count": 15,
+  "delete": []
+}

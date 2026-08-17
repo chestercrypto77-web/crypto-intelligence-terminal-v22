@@ -1,0 +1,10 @@
+V22.7 CLEAN UPDATE
+
+1. Extract the ZIP.
+2. Upload all extracted contents over the existing crypto-intelligence-terminal-v22 repository.
+3. Do not delete existing files/folders first.
+4. Commit directly to main.
+5. Suggested commit: Install V22.7 AWS Lambda Deployment Foundation
+
+V22.7 does NOT deploy or schedule Lambda just by being uploaded.
+After upload, AWS account/IAM setup is performed separately and deliberately.

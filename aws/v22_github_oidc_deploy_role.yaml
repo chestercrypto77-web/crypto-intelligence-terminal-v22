@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Least-privilege GitHub OIDC deploy role for the V22 Lambda validation function.
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Default: chestercypto77-web
+  GitHubRepository:
+    Type: String
+    Default: crypto-intelligence-terminal-v22
+  FunctionName:
+    Type: String
+    Default: v22-brain
+  ExistingGitHubOidcProviderArn:
+    Type: String
+    Default: ''
+    Description: Leave blank to create the standard GitHub OIDC provider; otherwise paste an existing provider ARN.
+
+Conditions:
+  CreateGitHubOidcProvider: !Equals [!Ref ExistingGitHubOidcProviderArn, '']
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateGitHubOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      Tags:
+        - Key: Project
+          Value: V22-Brain
+
+  V22DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Temporary-credential deploy role restricted to the V22 repository main branch
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - CreateGitHubOidcProvider
+                - !Ref GitHubOidcProvider
+                - !Ref ExistingGitHubOidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOwner}/${GitHubRepository}:ref:refs/heads/main
+      Policies:
+        - PolicyName: V22LambdaDeployOnly
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:GetFunction
+                  - lambda:GetFunctionConfiguration
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                  - lambda:InvokeFunction
+                Resource: !Sub arn:${AWS::Partition}:lambda:ap-southeast-2:${AWS::AccountId}:function:${FunctionName}
+      Tags:
+        - Key: Project
+          Value: V22-Brain
+
+Outputs:
+  DeployRoleArn:
+    Description: Save this as the GitHub repository variable AWS_V22_DEPLOY_ROLE_ARN
+    Value: !GetAtt V22DeployRole.Arn

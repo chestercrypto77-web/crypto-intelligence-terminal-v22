@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: V22 Brain validation Lambda foundation in Sydney. Manual deployment only; no schedule.
+
+Parameters:
+  FunctionName:
+    Type: String
+    Default: v22-brain
+
+Resources:
+  V22LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: Project
+          Value: V22-Brain
+
+  V22BrainFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref FunctionName
+      Description: V22 deterministic Brain validation runtime - manual invocation only
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Handler: index.lambda_handler
+      Role: !GetAtt V22LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 180
+      ReservedConcurrentExecutions: 2
+      Environment:
+        Variables:
+          V22_COLLECTOR_MODE: live
+          V22_AUTO_MIGRATE: '0'
+          V22_LAMBDA_MIN_REMAINING_MS: '15000'
+          V22_LIVE_HTTP_TIMEOUT_SECONDS: '8'
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {
+                  "ok": False,
+                  "status": "V22_CODE_NOT_DEPLOYED",
+                  "message": "Foundation created. Deploy the validated V22 package before testing."
+              }
+      Tags:
+        - Key: Project
+          Value: V22-Brain
+        - Key: Stage
+          Value: Validation
+
+Outputs:
+  FunctionName:
+    Description: Lambda function name used by the V22 deploy workflow
+    Value: !Ref V22BrainFunction
+  FunctionArn:
+    Value: !GetAtt V22BrainFunction.Arn
+  ExecutionRoleArn:
+    Value: !GetAtt V22LambdaExecutionRole.Arn

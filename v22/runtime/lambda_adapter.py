@@ -59,7 +59,7 @@ class LambdaRuntime:
         )
         return {
             "ok": result.status in {"COMPLETED", "PARTIAL"},
-            "adapter_version": "stage5-v1",
+            "adapter_version": "stage7-v1",
             "brain_version": __version__,
             "cycle": asdict(result),
         }
@@ -79,6 +79,13 @@ def runtime_from_environment() -> LambdaRuntime:
     if not database_url:
         raise InvocationRejected("DATABASE_URL must not be empty")
 
+    # Local SQLite remains useful for development/tests, but a deployed Lambda must
+    # not silently write durable Brain state into its disposable filesystem.
+    in_aws = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
+    if in_aws and not database_url.startswith(("postgres://", "postgresql://")):
+        if os.getenv("V22_ALLOW_EPHEMERAL_SQLITE", "0") != "1":
+            raise InvocationRejected("AWS Lambda requires a Postgres/Neon DATABASE_URL")
+
     data_root = Path(os.getenv("V22_DATA_ROOT", ".")).resolve()
     try:
         minimum_remaining_ms = int(os.getenv("V22_LAMBDA_MIN_REMAINING_MS", "10000"))
@@ -87,7 +94,8 @@ def runtime_from_environment() -> LambdaRuntime:
     if minimum_remaining_ms < 1000:
         raise InvocationRejected("V22_LAMBDA_MIN_REMAINING_MS must be at least 1000")
 
-    collector_mode = os.getenv("V22_COLLECTOR_MODE", "snapshot").strip().lower()
+    collector_default = "live" if in_aws else "snapshot"
+    collector_mode = os.getenv("V22_COLLECTOR_MODE", collector_default).strip().lower()
     collector_map = {"snapshot": LegacySnapshotCollector, "live": LiveEvidenceCollector}
     if collector_mode not in collector_map:
         raise InvocationRejected("V22_COLLECTOR_MODE must be snapshot or live")

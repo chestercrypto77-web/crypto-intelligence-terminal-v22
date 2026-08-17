@@ -1,0 +1,28 @@
+{
+  "version": "22.7.0",
+  "result": "PASS",
+  "full_reconstructed_v22_tests": {
+    "passed": 57,
+    "failed": 0
+  },
+  "checks": {
+    "python_compile": "PASS",
+    "release_preflight": "PASS",
+    "legacy_release_smoke": "PASS",
+    "stage1_memory_smoke": "PASS",
+    "stage3_failure_smoke": "PASS",
+    "stage4_lambda_regression": "PASS",
+    "stage5_live_evidence_smoke": "PASS",
+    "stage7_lambda_deployment_smoke": "PASS",
+    "lambda_source_package_structure": "PASS",
+    "aws_ephemeral_sqlite_guard": "PASS",
+    "aws_default_live_collector": "PASS",
+    "cloudformation_no_schedule": "PASS",
+    "github_oidc_role_repo_main_restricted": "PASS",
+    "long_lived_aws_keys_designed_in": false,
+    "ai_calls_enabled": false,
+    "restate_enabled": false,
+    "prior_external_neon_gate": "PASS_V22_6_GITHUB_ACTIONS_RUN_2",
+    "live_aws_lambda_test": "NOT_RUN_AWS_NOT_CONFIGURED"
+  }
+}

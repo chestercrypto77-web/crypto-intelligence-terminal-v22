@@ -185,3 +185,18 @@ Stage 6 does not activate Neon during repository upload. A dedicated smoke test
 will later migrate a real Neon database, write a `MANUAL_TEST` cycle, destroy
 its first client objects, reconnect, and verify the same canonical cycle is
 recoverable. AI, Restate, AWS deployment and vector embeddings remain disabled.
+
+## V22.7 — AWS Lambda Deployment Foundation
+
+V22.7 turns the Stage-4 adapter into a deployable validation boundary without creating any recurring clock.
+
+- stable AWS handler: `v22.runtime.lambda_entry.lambda_handler`;
+- deployed Lambda rejects SQLite unless an explicit test-only escape hatch is set, so disposable `/tmp`/package storage cannot become canonical Brain memory;
+- deployed Lambda defaults to `LiveEvidenceCollector`, while local/test execution remains snapshot-first;
+- deployment ZIP is built reproducibly for Python 3.12 x86_64 Linux and contains the V22 package, live asset configuration and Psycopg dependency;
+- AWS foundation CloudFormation creates only the Lambda + basic execution role, with no EventBridge schedule;
+- GitHub OIDC deployment role is least-privilege and restricted to this repository's `main` branch;
+- manual deploy workflow can optionally invoke one live 15-minute validation cycle after deployment.
+
+### Updated controlled activation sequence
+The architecture blueprint remains unchanged in responsibility boundaries, but implementation gates are now more granular: V22.5 proved fresh live evidence, V22.6 proved real Neon persistence, and V22.7 prepares manual AWS execution. Restate is not introduced until a real `Lambda -> live evidence -> Brain -> Neon` cycle passes independently.

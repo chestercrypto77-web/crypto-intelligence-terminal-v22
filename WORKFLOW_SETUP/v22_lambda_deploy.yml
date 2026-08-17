@@ -1,0 +1,94 @@
+name: V22 Lambda Manual Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_live_test:
+        description: "Invoke one live 15-minute cycle after deployment"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AWS_REGION: ap-southeast-2
+      FUNCTION_NAME: v22-brain
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Build Lambda deployment ZIP
+        run: python scripts/build_v22_lambda_zip.py --install-deps --output dist/v22-lambda.zip
+
+      - name: Configure temporary AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: ${{ vars.AWS_V22_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update Lambda code
+        run: aws lambda update-function-code --function-name "$FUNCTION_NAME" --zip-file fileb://dist/v22-lambda.zip >/dev/null
+
+      - name: Wait for code update
+        run: aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+
+      - name: Configure deterministic live V22 runtime
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python - <<'PY'
+          import json, os
+          env={
+            'DATABASE_URL': os.environ['DATABASE_URL'],
+            'V22_COLLECTOR_MODE': 'live',
+            'V22_AUTO_MIGRATE': '0',
+            'V22_LAMBDA_MIN_REMAINING_MS': '15000',
+            'V22_LIVE_HTTP_TIMEOUT_SECONDS': '8',
+          }
+          open('/tmp/env.json','w').write(json.dumps({'Variables':env}))
+          PY
+          aws lambda update-function-configuration \
+            --function-name "$FUNCTION_NAME" \
+            --handler v22.runtime.lambda_entry.lambda_handler \
+            --runtime python3.12 \
+            --timeout 180 \
+            --memory-size 512 \
+            --environment file:///tmp/env.json >/dev/null
+          rm -f /tmp/env.json
+
+      - name: Wait for configuration update
+        run: aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+
+      - name: Optional live 15-minute test invocation
+        if: ${{ inputs.run_live_test }}
+        run: |
+          SLOT=$(python - <<'PY'
+          from datetime import datetime, timezone
+          now=datetime.now(timezone.utc)
+          minute=(now.minute//15)*15
+          slot=now.replace(minute=minute,second=0,microsecond=0)
+          print(slot.isoformat().replace('+00:00','Z'))
+          PY
+          )
+          printf '{"cycle":"15m","scheduled_at":"%s","workflow_id":"github-manual-deploy-test"}' "$SLOT" > /tmp/event.json
+          aws lambda invoke --function-name "$FUNCTION_NAME" --cli-binary-format raw-in-base64-out --payload fileb:///tmp/event.json /tmp/result.json >/dev/null
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/result.json'))
+          safe={k:v for k,v in data.items() if k!='database_url'}
+          print(json.dumps(safe,indent=2))
+          if not data.get('ok'):
+              raise SystemExit('Lambda Brain cycle did not complete/partial successfully')
+          PY
