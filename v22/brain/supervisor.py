@@ -57,7 +57,7 @@ def main():
     db=Database(SETTINGS.database_url); db.migrate()
     if args.once:
         print(json.dumps(cycle(db),indent=2)); return 0
-    print(json.dumps({"v22":"22.0.0","mode":SETTINGS.mode,"instance":SETTINGS.instance_id,"status":"STARTING"}))
+    print(json.dumps({"v22":"22.1.0","mode":SETTINGS.mode,"instance":SETTINGS.instance_id,"status":"STARTING"}))
     while not STOP:
         try: cycle(db)
         except Exception as e:

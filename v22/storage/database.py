@@ -23,7 +23,8 @@ class Database:
                 import psycopg
             except ImportError as e:
                 raise RuntimeError("PostgreSQL mode requires psycopg[binary]>=3.2") from e
-            conn=psycopg.connect(self.url)
+            from psycopg.rows import dict_row
+            conn=psycopg.connect(self.url, row_factory=dict_row)
         try:
             yield conn
             conn.commit()
@@ -49,18 +50,27 @@ class Database:
     def scalar(self, sql, params=(), default=None):
         with self.connect() as c:
             cur=c.cursor(); cur.execute(sql,params); row=cur.fetchone()
-            return row[0] if row else default
+            if not row:
+                return default
+            if isinstance(row, dict):
+                return next(iter(row.values()))
+            return row[0]
 
     def migrate(self):
-        schema = Path(__file__).resolve().parents[1]/"migrations"/("001_sqlite.sql" if self.kind=="sqlite" else "001_postgres.sql")
-        text=schema.read_text(encoding="utf-8")
+        migration_dir = Path(__file__).resolve().parents[1] / "migrations"
+        suffix = "sqlite.sql" if self.kind == "sqlite" else "postgres.sql"
+        schemas = sorted(migration_dir.glob(f"*_{suffix}"))
+        if not schemas:
+            raise RuntimeError(f"No {self.kind} migrations found in {migration_dir}")
         with self.connect() as c:
-            if self.kind=="sqlite":
-                c.executescript(text)
-            else:
-                cur=c.cursor()
-                for stmt in [x.strip() for x in text.split(";") if x.strip()]:
-                    cur.execute(stmt)
+            for schema in schemas:
+                text = schema.read_text(encoding="utf-8")
+                if self.kind == "sqlite":
+                    c.executescript(text)
+                else:
+                    cur = c.cursor()
+                    for stmt in [x.strip() for x in text.split(";") if x.strip()]:
+                        cur.execute(stmt)
 
     def insert_event(self, table, fields: dict):
         keys=list(fields); vals=[fields[k] for k in keys]

@@ -1,8 +1,19 @@
 {
-  "version": "22.0.0",
-  "release": "Always-On Brain Foundation",
-  "mode": "SHADOW ONLY",
-  "authoritative_store": "PostgreSQL in production; SQLite local test fallback",
-  "critical_change": "GitHub Actions no longer intended as long-term observation heartbeat",
-  "real_money_execution": false
+  "version": "22.1.0",
+  "release": "Brain Contracts + Neon Memory Foundation",
+  "architecture_stage": "Stage 0 + Stage 1",
+  "mode": "FOUNDATION / SHADOW ONLY",
+  "authoritative_store_target": "Neon PostgreSQL; SQLite local validation fallback",
+  "external_services_activated": false,
+  "restate_activated": false,
+  "lambda_activated": false,
+  "ai_activated": false,
+  "real_money_execution": false,
+  "critical_guarantees": [
+    "scheduled execution is not treated as proof of analysis",
+    "cycle completion requires durable expected-asset coverage",
+    "evidence and deterministic observations are separate",
+    "persistent writes are retry-safe",
+    "AI findings must reference evidence"
+  ]
 }

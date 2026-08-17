@@ -1,0 +1,14 @@
+V22.1 — ONE CLEAN FOUNDATION UPDATE
+
+This release is Stage 0 + Stage 1 only. It adds the frozen Brain contracts and Neon-ready memory foundation.
+It does NOT require AWS, Restate, Neon or AI account setup yet.
+
+When you are instructed to install this release:
+1. Extract the ZIP.
+2. Upload the complete extracted contents over the existing repository.
+3. Confirm the hidden .github folder is included.
+4. Commit directly to main.
+5. Reboot Streamlit only if GitHub/Streamlit requires it.
+
+Existing live runtime JSON histories are deliberately not packaged, so accumulated records are protected.
+No new external secrets are required for V22.1.

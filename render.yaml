@@ -1,3 +1,4 @@
+# LEGACY V22.0 RENDER ARTIFACT — DO NOT PROVISION; see V22_DEPLOYMENT_PLAN.md
 services:
   - type: worker
     name: crypto-v22-brain

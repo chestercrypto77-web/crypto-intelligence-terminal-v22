@@ -1,0 +1,15 @@
+{
+  "version": "22.1.0",
+  "release": "Brain Contracts + Neon Memory Foundation",
+  "stage": "0 + 1",
+  "validation": {
+    "preflight": "passed",
+    "stage1_end_to_end_smoke": "passed",
+    "v22_pytest": "13 passed",
+    "python_compileall": "passed",
+    "legacy_release_smoke": "passed",
+    "protected_runtime_data_collision": "passed",
+    "live_external_neon_test": "not run \u2014 no credentials required at Stage 1",
+    "restate_lambda_ai": "not activated by design"
+  }
+}
