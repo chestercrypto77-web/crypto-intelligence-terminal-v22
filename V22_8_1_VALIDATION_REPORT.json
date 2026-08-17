@@ -1,0 +1,23 @@
+{
+  "version": "22.8.1",
+  "status": "passed_local_release_validation",
+  "production_incident_reproduced": "UUID object contract-boundary mismatch",
+  "tests": {
+    "v22_pytest": "65/65 passed",
+    "uuid_postgres_query_normalisation": "passed",
+    "uuid_postgres_scalar_normalisation": "passed",
+    "uuid_contract_smoke": "passed",
+    "stage1_smoke": "passed",
+    "stage3_failure_smoke": "passed",
+    "stage5_live_smoke": "passed",
+    "stage8_runtime_smoke": "passed",
+    "python_compileall": "passed",
+    "ai_activation": "zero",
+    "aws_activation": "zero",
+    "restate_activation": "zero"
+  },
+  "external_validation": {
+    "first_v22_8_live_cycle": "PARTIAL, 0/16 analysed, 32 UUID persistence failures",
+    "v22_8_1_live_cycle": "pending one controlled GitHub rerun after upload"
+  }
+}

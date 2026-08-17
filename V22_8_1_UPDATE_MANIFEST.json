@@ -1,0 +1,12 @@
+{
+  "version": "22.8.1",
+  "release": "UUID Persistence Repair",
+  "overlay_base": "22.8.0",
+  "database_migration": "none",
+  "workflow_changes": "none",
+  "root_cause": "psycopg Postgres UUID values crossed the storage boundary as uuid.UUID while V22 contracts require string UUIDs",
+  "repair": "normalize native UUID query/scalar outputs to canonical strings in v22.storage.database",
+  "ai_enabled": false,
+  "aws_enabled": false,
+  "restate_enabled": false
+}

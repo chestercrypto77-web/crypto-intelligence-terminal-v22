@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -13,6 +14,30 @@ class DatabaseHealth:
     reachable: bool
     server_version: str | None
     pooled_endpoint: bool
+
+
+def _portable_db_value(value):
+    """Normalize driver-specific UUID objects at the storage boundary.
+
+    SQLite returns UUID columns as strings while psycopg/Postgres returns
+    ``uuid.UUID`` instances. V22 contracts intentionally use string IDs, so a
+    Postgres UUID leaking above this boundary can make ``uuid.UUID(value)`` fail
+    with ``AttributeError: 'UUID' object has no attribute 'replace'``.
+
+    Keeping this normalization in the database adapter makes SQLite and Neon
+    behave identically without weakening the contract validation itself.
+    """
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    return value
+
+
+def _portable_row(row):
+    if isinstance(row, dict):
+        return {key: _portable_db_value(value) for key, value in row.items()}
+    if hasattr(row, "keys"):
+        return {key: _portable_db_value(row[key]) for key in row.keys()}
+    return tuple(_portable_db_value(value) for value in row)
 
 
 class Database:
@@ -83,7 +108,7 @@ class Database:
             cur = c.cursor()
             cur.execute(sql, params)
             rows = cur.fetchall()
-            return [dict(r) if hasattr(r, "keys") else r for r in rows]
+            return [_portable_row(r) for r in rows]
 
     def scalar(self, sql, params=(), default=None):
         with self.connect() as c:
@@ -93,8 +118,8 @@ class Database:
             if not row:
                 return default
             if isinstance(row, dict):
-                return next(iter(row.values()))
-            return row[0]
+                return _portable_db_value(next(iter(row.values())))
+            return _portable_db_value(row[0])
 
     def healthcheck(self) -> DatabaseHealth:
         if self.kind == "sqlite":

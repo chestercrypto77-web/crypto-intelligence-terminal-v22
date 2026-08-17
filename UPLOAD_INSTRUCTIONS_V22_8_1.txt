@@ -1,0 +1,8 @@
+V22.8.1 UUID Persistence Repair
+
+1. Extract this ZIP.
+2. Upload all files/folders inside over the existing crypto-intelligence-terminal-v22 repository.
+3. Do not delete existing repository files or Neon data.
+4. Commit directly to main.
+5. Suggested commit message: Install V22.8.1 UUID Persistence Repair
+6. After upload, manually run ONE V22 5-Minute Free Validation workflow.
