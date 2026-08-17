@@ -173,3 +173,15 @@ Stage 5 introduces a replaceable live market evidence adapter without changing t
 The initial live provider is Binance public market-data-only REST. The provider is intentionally hidden behind the collector boundary so a future source or multi-source collector can replace it without changing Lambda, cycle control, deterministic calculations, or memory contracts.
 
 Snapshot mode remains available for tests/fallback. Lambda selects the collector using `V22_COLLECTOR_MODE=snapshot|live`; live activation is deferred until the controlled deployment stage.
+
+## Stage 6 — Neon Live Memory Integration (V22.6)
+
+The canonical `Database` boundary now supports short-lived Psycopg 3 Postgres
+connections suitable for serverless execution. For Neon, TLS is required by
+default and pooled endpoints are detected so the future Lambda deployment can
+use Neon's PgBouncer endpoint. The database URL remains environment-only.
+
+Stage 6 does not activate Neon during repository upload. A dedicated smoke test
+will later migrate a real Neon database, write a `MANUAL_TEST` cycle, destroy
+its first client objects, reconnect, and verify the same canonical cycle is
+recoverable. AI, Restate, AWS deployment and vector embeddings remain disabled.

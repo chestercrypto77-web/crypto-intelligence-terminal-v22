@@ -1,1 +1,2 @@
+# V22.6 external-runtime dependency. SQLite/local tests do not require this.
 psycopg[binary]>=3.2,<4

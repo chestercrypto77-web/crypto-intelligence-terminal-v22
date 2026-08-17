@@ -1,0 +1,9 @@
+V22.6 CLEAN ESSENTIAL UPDATE
+
+1. Extract this ZIP.
+2. Upload everything inside over the existing crypto-intelligence-terminal-v22 repository.
+3. Do not delete existing repository files or data first.
+4. Commit directly to main.
+Suggested commit: Install V22.6 Neon Live Memory Integration
+
+This upload does NOT require Neon credentials and does NOT activate any external service.

@@ -1,0 +1,13 @@
+{
+  "version": "22.6.0",
+  "release": "Neon Live Memory Integration",
+  "stage": 6,
+  "activation": "not_live",
+  "ai_enabled": false,
+  "external_accounts_required_for_upload": false,
+  "database_backends": ["sqlite", "postgresql/neon"],
+  "postgres_driver": "psycopg3",
+  "serverless_connection_model": "short-lived",
+  "neon_pooled_endpoint_supported": true,
+  "live_neon_test_performed": false
+}

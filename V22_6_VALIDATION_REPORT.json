@@ -1,0 +1,22 @@
+{
+  "version": "22.6.0",
+  "result": "PASS",
+  "full_reconstructed_v22_tests": {"passed": 51, "failed": 0},
+  "checks": {
+    "python_compile": "PASS",
+    "release_preflight": "PASS",
+    "stage1_memory_smoke": "PASS",
+    "stage3_failure_smoke": "PASS",
+    "stage4_lambda_smoke": "PASS",
+    "stage5_live_evidence_smoke": "PASS",
+    "database_reconnect_smoke_sqlite": "PASS",
+    "neon_dsn_tls_default": "PASS",
+    "neon_pooler_detection": "PASS",
+    "explicit_connection_options_preserved": "PASS",
+    "lazy_psycopg_boundary": "PASS",
+    "closed_cursor_return_bug_removed": "PASS",
+    "protected_runtime_data_preflight": "PASS",
+    "ai_calls_enabled": false,
+    "live_neon_credentials_test": "NOT_RUN_NO_CREDENTIALS"
+  }
+}

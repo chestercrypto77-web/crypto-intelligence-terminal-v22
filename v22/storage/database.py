@@ -1,30 +1,67 @@
 from __future__ import annotations
-import json, sqlite3, time
+
+import sqlite3
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+
+@dataclass(frozen=True)
+class DatabaseHealth:
+    kind: str
+    reachable: bool
+    server_version: str | None
+    pooled_endpoint: bool
+
 
 class Database:
-    def __init__(self, url: str):
-        self.url=url
-        self.kind="postgres" if url.startswith(("postgres://","postgresql://")) else "sqlite"
-        if self.kind=="sqlite":
-            raw=url.replace("sqlite:///","",1)
-            self.path=Path(raw)
+    """Small SQLite/Postgres boundary used by the V22 Brain.
+
+    Postgres mode is intentionally compatible with Neon/serverless execution:
+    connections are short-lived, no process-local pool is required, and the
+    connection URL remains entirely environment supplied.
+    """
+
+    def __init__(self, url: str, *, connect_timeout_seconds: int = 10):
+        self.url = (url or "").strip()
+        self.kind = "postgres" if self.url.startswith(("postgres://", "postgresql://")) else "sqlite"
+        self.connect_timeout_seconds = max(1, int(connect_timeout_seconds))
+        if self.kind == "sqlite":
+            raw = self.url.replace("sqlite:///", "", 1)
+            self.path = Path(raw)
             self.path.parent.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def is_neon(self) -> bool:
+        return self.kind == "postgres" and ".neon.tech" in (urlsplit(self.url).hostname or "")
+
+    @property
+    def uses_pooled_endpoint(self) -> bool:
+        host = urlsplit(self.url).hostname or ""
+        return "-pooler." in host
+
+    def _postgres_url(self) -> str:
+        """Return DSN with safe serverless defaults without exposing it."""
+        parts = urlsplit(self.url)
+        query = dict(parse_qsl(parts.query, keep_blank_values=True))
+        query.setdefault("connect_timeout", str(self.connect_timeout_seconds))
+        if self.is_neon:
+            query.setdefault("sslmode", "require")
+        return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
     @contextmanager
     def connect(self):
-        if self.kind=="sqlite":
-            conn=sqlite3.connect(self.path, timeout=30)
-            conn.row_factory=sqlite3.Row
+        if self.kind == "sqlite":
+            conn = sqlite3.connect(self.path, timeout=30)
+            conn.row_factory = sqlite3.Row
         else:
             try:
                 import psycopg
             except ImportError as e:
-                raise RuntimeError("PostgreSQL mode requires psycopg[binary]>=3.2") from e
+                raise RuntimeError("PostgreSQL/Neon mode requires psycopg[binary]>=3.2") from e
             from psycopg.rows import dict_row
-            conn=psycopg.connect(self.url, row_factory=dict_row)
+            conn = psycopg.connect(self._postgres_url(), row_factory=dict_row)
         try:
             yield conn
             conn.commit()
@@ -35,26 +72,41 @@ class Database:
             conn.close()
 
     def execute(self, sql, params=()):
+        # Never return a cursor whose connection has already been closed.
         with self.connect() as c:
-            cur=c.cursor()
+            cur = c.cursor()
             cur.execute(sql, params)
-            return cur
+            return cur.rowcount
 
     def query(self, sql, params=()):
         with self.connect() as c:
-            cur=c.cursor()
+            cur = c.cursor()
             cur.execute(sql, params)
-            rows=cur.fetchall()
-            return [dict(r) if hasattr(r,"keys") else r for r in rows]
+            rows = cur.fetchall()
+            return [dict(r) if hasattr(r, "keys") else r for r in rows]
 
     def scalar(self, sql, params=(), default=None):
         with self.connect() as c:
-            cur=c.cursor(); cur.execute(sql,params); row=cur.fetchone()
+            cur = c.cursor()
+            cur.execute(sql, params)
+            row = cur.fetchone()
             if not row:
                 return default
             if isinstance(row, dict):
                 return next(iter(row.values()))
             return row[0]
+
+    def healthcheck(self) -> DatabaseHealth:
+        if self.kind == "sqlite":
+            value = self.scalar("SELECT sqlite_version()")
+        else:
+            value = self.scalar("SHOW server_version")
+        return DatabaseHealth(
+            kind=self.kind,
+            reachable=bool(value),
+            server_version=str(value) if value is not None else None,
+            pooled_endpoint=self.uses_pooled_endpoint,
+        )
 
     def migrate(self):
         migration_dir = Path(__file__).resolve().parents[1] / "migrations"
@@ -69,11 +121,14 @@ class Database:
                     c.executescript(text)
                 else:
                     cur = c.cursor()
+                    # V22 migrations deliberately avoid procedural blocks; simple
+                    # semicolon splitting keeps the deploy package dependency-light.
                     for stmt in [x.strip() for x in text.split(";") if x.strip()]:
                         cur.execute(stmt)
 
     def insert_event(self, table, fields: dict):
-        keys=list(fields); vals=[fields[k] for k in keys]
-        ph=",".join(["?"]*len(keys)) if self.kind=="sqlite" else ",".join(["%s"]*len(keys))
-        sql=f"INSERT INTO {table} ({','.join(keys)}) VALUES ({ph})"
+        keys = list(fields)
+        vals = [fields[k] for k in keys]
+        ph = ",".join(["?"] * len(keys)) if self.kind == "sqlite" else ",".join(["%s"] * len(keys))
+        sql = f"INSERT INTO {table} ({','.join(keys)}) VALUES ({ph})"
         self.execute(sql, vals)
