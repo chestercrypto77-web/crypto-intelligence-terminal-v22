@@ -32,4 +32,5 @@ jobs:
       - name: Run fresh V22 paper brains
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/v22_paper_competition.py
