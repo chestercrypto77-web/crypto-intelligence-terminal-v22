@@ -1,0 +1,32 @@
+{
+  "release": "22.12.0",
+  "files": [
+    "app.py",
+    "README_V22_12.md",
+    "UPLOAD_INSTRUCTIONS_V22_12.txt",
+    "v22/__init__.py",
+    "v22/migrations/006_paper_learning_postgres.sql",
+    "v22/migrations/006_paper_learning_sqlite.sql",
+    "v22/trading/competition.py",
+    "v22/tests/test_stage12_trade_journey.py",
+    "v22/ui/neon_reader.py"
+  ],
+  "wallet_reset": false,
+  "open_positions_retained": true,
+  "workflow_change": false,
+  "timeframes_restored": [
+    "15m",
+    "1h",
+    "4h",
+    "24h"
+  ],
+  "trade_journey": [
+    "15m marks",
+    "MFE",
+    "MAE",
+    "holding time",
+    "entry reason",
+    "exit reason"
+  ],
+  "risk_policy_unchanged": true
+}

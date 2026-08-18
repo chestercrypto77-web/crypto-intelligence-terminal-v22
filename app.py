@@ -20,7 +20,7 @@ from v22.ui.neon_reader import (
 )
 
 APP_NAME = "Crypto Intelligence Terminal"
-APP_VERSION = "22.11.1-paper-import-fix"
+APP_VERSION = "22.12-trade-journey-ui"
 ROOT = Path(__file__).resolve().parent
 HOLDINGS_FILE = ROOT / "config" / "portfolio_holdings.json"
 
@@ -48,6 +48,11 @@ label, [data-testid="stWidgetLabel"] {color:#dfe7f0 !important;}
 .card-value{font-size:1.28rem;font-weight:850;color:#fff;margin:.18rem 0}
 .card-note{font-size:.78rem;color:#b2bdca}
 .asset-row{display:grid;grid-template-columns:1.1fr .8fr .8fr .8fr 1fr 1.1fr;gap:10px;align-items:center;background:#171c23;border:1px solid #29313c;border-radius:11px;padding:10px 12px;margin:.34rem 0}
+.asset-row-wide{display:grid;grid-template-columns:1.30fr .55fr .55fr .55fr .55fr .72fr .78fr 1.48fr;gap:9px;align-items:center;background:#171c23;border:1px solid #29313c;border-radius:12px;padding:11px 12px;margin:.38rem 0}
+.brain-card{background:linear-gradient(180deg,#1d2530,#171c23);border:1px solid #303947;border-radius:14px;padding:13px 14px;min-height:170px}
+.brain-name{font-size:1.02rem;font-weight:900;color:#fff;margin:.08rem 0 .15rem}.brain-method{font-size:.67rem;text-transform:uppercase;letter-spacing:.12em;color:#8fb6e8;font-weight:850}
+.brain-big{font-size:1.26rem;font-weight:900;color:#fff;margin:.42rem 0}.brain-line{display:flex;justify-content:space-between;gap:.65rem;color:#b8c4d2;font-size:.76rem;padding:.18rem 0;border-top:1px solid rgba(255,255,255,.05)}
+.time-up{color:#49d17d;font-weight:850}.time-down{color:#ff6f76;font-weight:850}.time-flat{color:#e4c45c;font-weight:850}
 .asset-name{font-weight:850;color:#ffffff}.asset-sub{font-size:.73rem;color:#a9b6c6}.label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb0c4;font-weight:800}.value{font-weight:800;color:#f3f7fb}
 .signal-up{color:var(--good);font-weight:850}.signal-down{color:var(--bad);font-weight:850}.signal-watch{color:var(--watch);font-weight:850}.signal-fade{color:var(--fade);font-weight:850}.signal-flat{color:var(--flat);font-weight:850}.signal-muted{color:#9aa7b6;font-weight:750}
 .pill{display:inline-block;border:1px solid #374250;border-radius:999px;padding:.10rem .45rem;font-size:.69rem;color:#c4cfdb;background:#1b222a}.pill-good{border-color:#2d6c49;color:#6ee59c}.pill-warn{border-color:#735e2c;color:#f1cd72}.pill-bad{border-color:#73373b;color:#ff9298}
@@ -227,16 +232,26 @@ def latest_asset_rows(evidence, observations):
     return rows
 
 
+def timeframe_html(v):
+    x=fnum(v)
+    cls="time-up" if x>0 else ("time-down" if x<0 else "time-flat")
+    arrow="↑" if x>0 else ("↓" if x<0 else "→")
+    return f'<span class="{cls}">{arrow} {abs(x):.2f}%</span>'
+
+
 def render_attention(row, name="", narrative=""):
-    vol_cls,vol_arrow=flow_class(row["Volume"]); trend_cls,trend_arrow=flow_class(row["Trend"])
+    vol_cls,vol_arrow=flow_class(row["Volume"])
     reason=" · ".join(row["reasons"]) if row["reasons"] else "No unusual deterministic condition"
     st.markdown(
-        f'<div class="asset-row"><div><div class="asset-name">{esc(row["Asset"])} {("· "+esc(name)) if name else ""}</div><div class="asset-sub">{esc(narrative)}</div></div>'
-        f'<div><div class="label">24h</div><div class="value">{signed(row["24h"])}</div></div>'
+        f'<div class="asset-row-wide"><div><div class="asset-name">{esc(row["Asset"])} {("· "+esc(name)) if name else ""}</div><div class="asset-sub">{esc(narrative)}</div></div>'
+        f'<div><div class="label">15m</div>{timeframe_html(row["15m"])}</div>'
+        f'<div><div class="label">1h</div>{timeframe_html(row["1h"])}</div>'
+        f'<div><div class="label">4h</div>{timeframe_html(row["4h"])}</div>'
+        f'<div><div class="label">24h</div>{timeframe_html(row["24h"])}</div>'
         f'<div><div class="label">Volume</div><div class="{vol_cls}">{vol_arrow} {esc(row["Volume"])}</div></div>'
-        f'<div><div class="label">Trend</div><div class="{trend_cls}">{trend_arrow} {esc(row["Trend"])}</div></div>'
         f'<div><div class="label">Structure</div><div class="value">{esc(row["Structure"])}</div></div>'
         f'<div><div class="label">Why it matters</div><div class="asset-sub">{esc(reason)}</div></div></div>',unsafe_allow_html=True)
+
 
 
 # Sidebar: familiar platform shell, V22 source of truth.
@@ -291,6 +306,8 @@ if isinstance(snapshot, dict):
         "paper_trades": ("paper_trades",),
         "paper_decisions": ("paper_decisions",),
         "paper_lessons": ("paper_lessons",),
+        "paper_marks": ("paper_marks",),
+        "paper_outcomes": ("paper_outcomes",),
     }
     for attr, keys in aliases.items():
         value = []
@@ -339,8 +356,15 @@ if selection=="Today":
         st.markdown(f'<div class="notice"><b>{len(attention)} asset(s) deserve attention.</b> The strongest current reasons are concentrated in {esc(names)}. This is an observation summary, not a trade instruction.</div>',unsafe_allow_html=True)
     else:
         st.markdown('<div class="notice">No current asset meets the objective attention rules in the latest persisted V22 observations.</div>',unsafe_allow_html=True)
+    section("Fast timeframe pulse")
+    if asset_rows:
+        pulse=[]
+        for label,key in [("15m","15m"),("1h","1h"),("4h","4h"),("24h","24h")]:
+            leader=max(asset_rows,key=lambda r:r[key]); laggard=min(asset_rows,key=lambda r:r[key])
+            pulse.append({"Window":label,"Strongest":f"{leader['Asset']} {signed(leader[key])}","Weakest":f"{laggard['Asset']} {signed(laggard[key])}"})
+        st.dataframe(pd.DataFrame(pulse),use_container_width=True,hide_index=True)
     section("Moves now")
-    movers=sorted(asset_rows,key=lambda r:(len(r["reasons"]),abs(r["24h"]),abs(r["4h"])),reverse=True)[:8]
+    movers=sorted(asset_rows,key=lambda r:(len(r["reasons"]),abs(r["15m"]),abs(r["1h"]),abs(r["24h"])),reverse=True)[:8]
     for r in movers:
         h=holding_map.get(r["Asset"],{})
         render_attention(r,h.get("name",""),h.get("narrative",""))
@@ -413,30 +437,59 @@ elif selection=="Research":
         for x in snapshot.syntheses[:10]:st.markdown(f'<div class="notice">{esc(x.get("summary"))}</div>',unsafe_allow_html=True)
 
 elif selection=="Trading Desk":
-    if not snapshot.paper_brains:
-        st.markdown('<div class="locked"><b>Fresh paper competition is installed but has not completed its first run yet.</b><br>Live execution remains LOCKED. The scheduled paper workflow will initialise four equal A$100,000 wallets and begin from current V22 evidence.</div>',unsafe_allow_html=True)
-    else:
-        st.markdown('<div class="notice"><b>PAPER ONLY · fresh V22 competition</b><br>Each brain has an isolated wallet. Entries start at 1.5% of capital, scale-ins are capped, at least 70% cash reserve is protected, and no live execution path exists.</div>',unsafe_allow_html=True)
-        bdf=pd.DataFrame(snapshot.paper_brains)
-        bdf["Win rate %"]=bdf.apply(lambda r:(100*fnum(r.get("wins"))/max(1,fnum(r.get("trades_closed")))),axis=1)
-        bdf["Cash AUD"]=bdf["cash_aud"].map(lambda x:money(x,source_currency="AUD"))
-        bdf["Realised P/L AUD"]=bdf["realised_pnl_aud"].map(lambda x:money(x,source_currency="AUD"))
-        bdf["Risk size"]=bdf["risk_multiplier"].map(lambda x:f"{fnum(x)*100:.0f}% baseline")
-        st.dataframe(bdf[["name","strategy_key","Cash AUD","Realised P/L AUD","trades_closed","Win rate %","Risk size"]].rename(columns={"name":"Brain","strategy_key":"Method","trades_closed":"Closed trades"}),use_container_width=True,hide_index=True)
-    section("Open paper positions")
+    st.markdown('<div class="notice"><b>PAPER ONLY · V22 fresh competition</b><br>Four isolated wallets compete on the same evidence. Initial entries are 1.5%, scale-ins are capped, at least 70% cash is protected, and live execution remains locked.</div>',unsafe_allow_html=True)
+
+    if snapshot.paper_brains:
+        latest_mark={}
+        for m in snapshot.paper_marks:
+            pid=str(m.get("position_id"))
+            if pid not in latest_mark: latest_mark[pid]=m
+        open_by_brain=defaultdict(list)
+        for p in snapshot.paper_positions:
+            if str(p.get("status"))=="OPEN": open_by_brain[str(p.get("brain_id"))].append(p)
+        cols=st.columns(4)
+        for idx,b in enumerate(snapshot.paper_brains):
+            bid=str(b.get("brain_id")); opens=open_by_brain.get(bid,[])
+            starting=max(1.0,fnum(b.get("starting_cash_aud"))); cash=fnum(b.get("cash_aud"))
+            deployed=sum(fnum(p.get("quantity"))*fnum((latest_mark.get(str(p.get("position_id"))) or {}).get("price_aud") or p.get("last_price_aud") or p.get("avg_entry_price_aud")) for p in opens)
+            closed=int(fnum(b.get("trades_closed"))); wins=int(fnum(b.get("wins"))); winrate=100*wins/max(1,closed)
+            with cols[idx%4]:
+                st.markdown(
+                    f'<div class="brain-card"><div class="brain-method">{esc(b.get("strategy_key"))}</div><div class="brain-name">{esc(b.get("name"))}</div>'
+                    f'<div class="brain-big">{money(cash,source_currency="AUD")} cash</div>'
+                    f'<div class="brain-line"><span>Deployed</span><b>{money(deployed,source_currency="AUD")} · {100*deployed/starting:.1f}%</b></div>'
+                    f'<div class="brain-line"><span>Cash reserve</span><b>{100*cash/starting:.1f}%</b></div>'
+                    f'<div class="brain-line"><span>Open positions</span><b>{len(opens)}</b></div>'
+                    f'<div class="brain-line"><span>Realised P/L</span><b>{money(b.get("realised_pnl_aud"),source_currency="AUD")}</b></div>'
+                    f'<div class="brain-line"><span>Closed / win rate</span><b>{closed} / {winrate:.0f}%</b></div>'
+                    f'<div class="brain-line"><span>Initial entry now</span><b>{1.5*fnum(b.get("risk_multiplier")):.2f}%</b></div></div>',
+                    unsafe_allow_html=True)
+
+    section("Open positions")
     opens=[p for p in snapshot.paper_positions if str(p.get("status"))=="OPEN"]
     if opens:
-        pdf=pd.DataFrame(opens)
-        pdf["Entry"]=pdf["avg_entry_price_aud"].map(lambda x:money(x,source_currency="AUD"))
-        pdf["Cost"]=pdf["cost_basis_aud"].map(lambda x:money(x,source_currency="AUD"))
-        st.dataframe(pdf[["brain","asset_id","quantity","Entry","Cost","add_count","opened_at"]].rename(columns={"brain":"Brain","asset_id":"Asset","add_count":"Adds"}),use_container_width=True,hide_index=True)
-    else: st.caption("No open paper positions yet.")
-    section("Recent paper trades")
+        latest_mark={}
+        for m in snapshot.paper_marks:
+            pid=str(m.get("position_id"))
+            if pid not in latest_mark: latest_mark[pid]=m
+        rows=[]
+        for p in opens:
+            m=latest_mark.get(str(p.get("position_id")),{})
+            mark=fnum(m.get("price_aud") or p.get("last_price_aud") or p.get("avg_entry_price_aud"))
+            entry=fnum(p.get("avg_entry_price_aud")); move=((mark/entry)-1)*100 if entry else 0
+            rows.append({"Brain":p.get("brain"),"Asset":p.get("asset_id"),"Entry":money(entry,source_currency="AUD"),
+                         "Current":money(mark,source_currency="AUD"),"Move":signed(move),"Cost":money(p.get("cost_basis_aud"),source_currency="AUD"),
+                         "Adds":p.get("add_count"),"Opened":fmt_time(p.get("opened_at"))})
+        st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+    else: st.caption("No open paper positions.")
+
+    section("Recent trade activity")
     if snapshot.paper_trades:
-        tdf=pd.DataFrame(snapshot.paper_trades)
-        tdf["Price"]=tdf["price_aud"].map(lambda x:money(x,source_currency="AUD"))
-        tdf["Notional"]=tdf["notional_aud"].map(lambda x:money(x,source_currency="AUD"))
-        st.dataframe(tdf[["executed_at","brain","asset_id","side","Notional","Price","reason"]].rename(columns={"executed_at":"Time","brain":"Brain","asset_id":"Asset","side":"Side","reason":"Reason"}),use_container_width=True,hide_index=True)
+        trows=[{"Time":fmt_time(t.get("executed_at")),"Brain":t.get("brain"),"Asset":t.get("asset_id"),"Side":t.get("side"),
+                "Notional":money(t.get("notional_aud"),source_currency="AUD"),"Price":money(t.get("price_aud"),source_currency="AUD"),"Reason":t.get("reason")}
+               for t in snapshot.paper_trades[:30]]
+        st.dataframe(pd.DataFrame(trows),use_container_width=True,hide_index=True)
+    else: st.caption("No paper trades recorded yet.")
 
 elif selection=="Strategy Lab":
     st.markdown('<div class="notice"><b>Four deterministic challenger brains are active in paper mode.</b><br>They all receive the same V22 evidence and equal capital. The contest measures decision quality and capital use rather than allowing different wallet sizes to distort results.</div>',unsafe_allow_html=True)
@@ -473,6 +526,15 @@ elif selection=="Performance Lab":
                          "Risk multiplier":f"{100*fnum(b.get('risk_multiplier')):.0f}%"})
         st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
     else: st.caption("Competition waiting for its first scheduled run.")
+    section("Closed trade journeys")
+    if snapshot.paper_outcomes:
+        odf=pd.DataFrame([{"Closed":fmt_time(o.get("closed_at")),"Brain":o.get("brain"),"Asset":o.get("asset_id"),
+                          "Return":signed(o.get("return_pct")),"Best while held":signed(o.get("max_favourable_pct")),
+                          "Worst while held":signed(o.get("max_adverse_pct")),"Held":f"{fnum(o.get('holding_minutes')):.0f} min",
+                          "P/L":money(o.get("pnl_aud"),source_currency="AUD"),"Exit reason":o.get("exit_reason")}
+                         for o in snapshot.paper_outcomes])
+        st.dataframe(odf,use_container_width=True,hide_index=True)
+    else: st.caption("No positions have completed a full trade journey yet.")
     section("Measured learning")
     if snapshot.paper_lessons:
         ldf=pd.DataFrame(snapshot.paper_lessons)
@@ -488,7 +550,12 @@ elif selection=="Learning Evidence":
     if snapshot.episodes:
         edf=pd.DataFrame(snapshot.episodes);st.dataframe(edf,use_container_width=True,hide_index=True)
     else:st.markdown('<div class="notice">Market episode memory remains available for the broader intelligence layer. The paper brains now also learn from their own measured closed-trade outcomes through bounded risk adaptation.</div>',unsafe_allow_html=True)
-    section("Paper-brain learning evidence")
+    section("Trade journey evidence")
+    c1,c2,c3=st.columns(3)
+    with c1:metric_card("Position marks",str(len(snapshot.paper_marks)),"15-minute path observations while trades are open")
+    with c2:metric_card("Completed journeys",str(len(snapshot.paper_outcomes)),"Entry → path → exit measured")
+    with c3:metric_card("Promoted lessons",str(sum(1 for x in snapshot.paper_lessons if str(x.get("state"))=="PROMOTED")),"Bounded learning after enough outcomes")
+    section("Paper-brain decision receipts")
     if snapshot.paper_decisions:
         ddf=pd.DataFrame(snapshot.paper_decisions)
         st.dataframe(ddf[[c for c in ["observed_at","brain","asset_id","action","risk_approved","requested_notional_aud","approved_notional_aud","reason"] if c in ddf]],use_container_width=True,hide_index=True)

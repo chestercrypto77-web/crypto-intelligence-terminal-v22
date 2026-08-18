@@ -24,6 +24,8 @@ class BrainSnapshot:
     paper_trades: list[dict[str, Any]]
     paper_decisions: list[dict[str, Any]]
     paper_lessons: list[dict[str, Any]]
+    paper_marks: list[dict[str, Any]]
+    paper_outcomes: list[dict[str, Any]]
 
 
 def resolve_database_url(streamlit_secrets: Any | None = None) -> str | None:
@@ -291,6 +293,32 @@ def load_paper_lessons(conn: Any, limit: int = 100) -> list[dict[str, Any]]:
     """, (limit,))
 
 
+
+def load_paper_marks(conn: Any, limit: int = 250) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "paper_position_marks"):
+        return []
+    return _fetch_all(conn, """
+        SELECT m.mark_id::text AS mark_id,m.position_id::text AS position_id,
+               m.brain_id::text AS brain_id,b.name AS brain,m.asset_id,m.price_aud,
+               m.return_pct,m.marked_at
+          FROM paper_position_marks m JOIN paper_brains b ON b.brain_id=m.brain_id
+         ORDER BY m.marked_at DESC LIMIT %s
+    """, (limit,))
+
+
+def load_paper_trade_outcomes(conn: Any, limit: int = 150) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "paper_trade_outcomes"):
+        return []
+    return _fetch_all(conn, """
+        SELECT o.outcome_id::text AS outcome_id,o.position_id::text AS position_id,
+               o.brain_id::text AS brain_id,b.name AS brain,o.asset_id,o.entry_price_aud,
+               o.exit_price_aud,o.cost_basis_aud,o.proceeds_aud,o.pnl_aud,o.return_pct,
+               o.max_favourable_pct,o.max_adverse_pct,o.holding_minutes,o.entry_reason,
+               o.exit_reason,o.opened_at,o.closed_at
+          FROM paper_trade_outcomes o JOIN paper_brains b ON b.brain_id=o.brain_id
+         ORDER BY o.closed_at DESC LIMIT %s
+    """, (limit,))
+
 def load_snapshot(database_url: str) -> BrainSnapshot:
     with readonly_connection(database_url) as conn:
         return BrainSnapshot(
@@ -310,4 +338,6 @@ def load_snapshot(database_url: str) -> BrainSnapshot:
             paper_trades=load_paper_trades(conn),
             paper_decisions=load_paper_decisions(conn),
             paper_lessons=load_paper_lessons(conn),
+            paper_marks=load_paper_marks(conn),
+            paper_outcomes=load_paper_trade_outcomes(conn),
         )

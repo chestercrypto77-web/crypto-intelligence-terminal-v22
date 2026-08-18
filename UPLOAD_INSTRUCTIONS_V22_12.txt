@@ -1,0 +1,9 @@
+V22.12 CLEAN UPDATE
+
+Extract and upload all files to crypto-intelligence-terminal-v22 on main.
+Suggested commit: Install V22.12 trade journey learning and UI
+
+No workflow file changes are required.
+Do not change DATABASE_URL.
+Existing paper wallets and open positions are retained.
+Migration 006 is additive and is applied by the next paper competition run.

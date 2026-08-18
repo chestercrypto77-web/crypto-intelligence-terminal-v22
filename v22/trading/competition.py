@@ -205,6 +205,59 @@ class PaperCompetitionEngine:
             total += float(p["quantity"]) * price
         return total
 
+    def _record_position_marks(self, cycle_id: str, positions: list[dict], prices_aud: dict[str, float]) -> None:
+        now = _iso(_now())
+        for p in positions:
+            asset = str(p["asset_id"])
+            price = prices_aud.get(asset)
+            if not price or price <= 0:
+                continue
+            entry = float(p["avg_entry_price_aud"])
+            ret = ((price / entry) - 1.0) * 100.0
+            sql = self._sql(
+                "INSERT OR IGNORE INTO paper_position_marks(mark_id,position_id,brain_id,cycle_id,asset_id,price_aud,return_pct,marked_at) VALUES (?,?,?,?,?,?,?,?)",
+                "INSERT INTO paper_position_marks(mark_id,position_id,brain_id,cycle_id,asset_id,price_aud,return_pct,marked_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT(position_id,cycle_id) DO NOTHING",
+            )
+            self.db.execute(sql, (str(uuid.uuid4()), p["position_id"], p["brain_id"], cycle_id, asset, price, ret, now))
+            upd = self._sql(
+                "UPDATE paper_positions SET last_price_aud=?,updated_at=? WHERE position_id=?",
+                "UPDATE paper_positions SET last_price_aud=%s,updated_at=%s WHERE position_id=%s",
+            )
+            self.db.execute(upd, (price, now, p["position_id"]))
+
+    def _record_trade_outcome(self, brain: dict, position: dict, exit_price: float, proceeds: float,
+                              pnl: float, ret: float, exit_reason: str, closed_at: str) -> None:
+        ph = self._ph
+        marks = self.db.query(
+            f"SELECT return_pct FROM paper_position_marks WHERE position_id={ph} ORDER BY marked_at",
+            (position["position_id"],),
+        )
+        excursions = [float(m["return_pct"]) for m in marks]
+        excursions.append(((exit_price / float(position["avg_entry_price_aud"])) - 1.0) * 100.0)
+        mfe = max(excursions) if excursions else ret
+        mae = min(excursions) if excursions else ret
+        decision = self.db.query(
+            f"SELECT reason,evidence_json FROM paper_trade_decisions "
+            f"WHERE brain_id={ph} AND asset_id={ph} AND action='ENTER' AND observed_at <= {ph} "
+            f"ORDER BY observed_at DESC LIMIT 1",
+            (brain["brain_id"], position["asset_id"], position["opened_at"]),
+        )
+        entry_reason = decision[0]["reason"] if decision else None
+        entry_evidence = decision[0]["evidence_json"] if decision else "{}"
+        if not isinstance(entry_evidence, str):
+            entry_evidence = _json(entry_evidence)
+        opened = datetime.fromisoformat(str(position["opened_at"]).replace("Z", "+00:00"))
+        closed = datetime.fromisoformat(str(closed_at).replace("Z", "+00:00"))
+        holding_minutes = max(0.0, (closed - opened).total_seconds() / 60.0)
+        sql = self._sql(
+            "INSERT OR IGNORE INTO paper_trade_outcomes(outcome_id,position_id,brain_id,asset_id,entry_price_aud,exit_price_aud,cost_basis_aud,proceeds_aud,pnl_aud,return_pct,max_favourable_pct,max_adverse_pct,holding_minutes,entry_reason,exit_reason,entry_evidence_json,opened_at,closed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO paper_trade_outcomes(outcome_id,position_id,brain_id,asset_id,entry_price_aud,exit_price_aud,cost_basis_aud,proceeds_aud,pnl_aud,return_pct,max_favourable_pct,max_adverse_pct,holding_minutes,entry_reason,exit_reason,entry_evidence_json,opened_at,closed_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s) ON CONFLICT(position_id) DO NOTHING",
+        )
+        self.db.execute(sql, (str(uuid.uuid4()), position["position_id"], brain["brain_id"], position["asset_id"],
+                             float(position["avg_entry_price_aud"]), exit_price, float(position["cost_basis_aud"]),
+                             proceeds, pnl, ret, mfe, mae, holding_minutes, entry_reason, exit_reason,
+                             entry_evidence, position["opened_at"], closed_at))
+
     def _decision(self, brain: dict, cycle_id: str, asset: str, action: str, reason: str,
                   approved: bool, requested: float, approved_notional: float,
                   price_aud: float, fx: float, evidence: dict[str, Any]) -> bool:
@@ -287,6 +340,7 @@ class PaperCompetitionEngine:
             "INSERT INTO paper_trades(trade_id,brain_id,position_id,cycle_id,asset_id,side,quantity,price_aud,notional_aud,executed_at,reason,cash_after_aud) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         )
         self.db.execute(trade, (str(uuid.uuid4()), brain["brain_id"], position["position_id"], cycle_id, position["asset_id"], "SELL", qty, price, proceeds, now, f"{reason}; return={ret:.3f}%", cash_after))
+        self._record_trade_outcome(brain, position, price, proceeds, pnl, ret, reason, now)
         self._learn(brain["brain_id"])
 
     def _learn(self, brain_id: str) -> None:
@@ -295,15 +349,11 @@ class PaperCompetitionEngine:
         sample = int(brain["trades_closed"])
         if sample < self.policy.learning_min_closed_trades:
             return
-        sells = self.db.query(
-            f"SELECT t.notional_aud,t.reason,p.cost_basis_aud FROM paper_trades t JOIN paper_positions p ON p.position_id=t.position_id WHERE t.brain_id={ph} AND t.side='SELL' ORDER BY t.executed_at DESC LIMIT 50",
+        outcomes = self.db.query(
+            f"SELECT return_pct,max_favourable_pct,max_adverse_pct FROM paper_trade_outcomes WHERE brain_id={ph} ORDER BY closed_at DESC LIMIT 50",
             (brain_id,),
         )
-        returns = []
-        for s in sells:
-            cost = float(s["cost_basis_aud"] or 0)
-            if cost:
-                returns.append((float(s["notional_aud"]) - cost) / cost * 100.0)
+        returns = [float(o["return_pct"]) for o in outcomes]
         if not returns:
             return
         avg = sum(returns) / len(returns)
@@ -344,6 +394,8 @@ class PaperCompetitionEngine:
         decisions = 0
         for raw_brain in brains:
             brain = dict(raw_brain)
+            positions = self._open_positions(brain["brain_id"])
+            self._record_position_marks(str(cycle["cycle_id"]), positions, prices)
             positions = self._open_positions(brain["brain_id"])
             by_asset = {str(p["asset_id"]): p for p in positions}
             deployed = self._mark_prices(positions, prices)
