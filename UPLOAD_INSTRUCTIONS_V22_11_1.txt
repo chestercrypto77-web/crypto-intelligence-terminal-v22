@@ -1,0 +1,15 @@
+V22.11.1 PAPER RUNNER IMPORT FIX
+
+Upload the extracted files to the repository root as one clean upload.
+
+IMPORTANT:
+GitHub browser uploads may not update .github/workflows automatically.
+After the upload, open .github/workflows/paper_competition_15m.yml and confirm
+the Run fresh V22 paper brains step includes:
+  PYTHONPATH: ${{ github.workspace }}
+
+If it does not, use the copy in WORKFLOW_SETUP/paper_competition_15m.yml
+to replace the workflow manually.
+
+Suggested commit:
+Fix V22.11 paper runner imports

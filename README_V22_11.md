@@ -17,3 +17,8 @@ Safety:
 - Learning may reduce sizing automatically; it can only restore toward baseline and can never exceed baseline.
 
 The scheduled paper workflow runs five minutes after each 15-minute market observer.
+
+## V22.11.1 GitHub runner import repair
+- Paper competition runner now bootstraps repository root before importing V22.
+- Workflow also exports PYTHONPATH to the checked-out repository.
+- Added regression coverage for launching the runner from an arbitrary working directory.

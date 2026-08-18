@@ -1,0 +1,12 @@
+{
+  "release": "22.11.1",
+  "status": "PASSED",
+  "fix": "runner repository-root import bootstrap + workflow PYTHONPATH",
+  "validation": {
+    "python_compile_files": 161,
+    "arbitrary_cwd_runner_import": "PASSED",
+    "paper_stage_tests": "\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m                                                                  [100%]\u001b[0m\n\u001b[32m\u001b[32m\u001b[1m7 passed\u001b[0m\u001b[32m in 8.67s\u001b[0m\u001b[0m",
+    "protected_data": "no database credential embedded",
+    "zip_integrity": "pending packaging"
+  }
+}
