@@ -1,0 +1,10 @@
+V22.8.2 Runtime Performance + Finalisation Repair
+
+1. Extract this ZIP.
+2. Upload everything inside over the existing crypto-intelligence-terminal-v22 repository.
+3. Do not delete existing files or folders first.
+4. Commit directly to main.
+Suggested commit: Install V22.8.2 Runtime Performance Repair
+
+No workflow file needs manual editing. The existing 4-minute GitHub hard timeout remains unchanged.
+After upload, manually run ONE V22 5-Minute Free Validation cycle and inspect Neon brain_cycles.

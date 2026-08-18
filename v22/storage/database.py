@@ -52,6 +52,7 @@ class Database:
         self.url = (url or "").strip()
         self.kind = "postgres" if self.url.startswith(("postgres://", "postgresql://")) else "sqlite"
         self.connect_timeout_seconds = max(1, int(connect_timeout_seconds))
+        self._session_conn = None
         if self.kind == "sqlite":
             raw = self.url.replace("sqlite:///", "", 1)
             self.path = Path(raw)
@@ -75,18 +76,49 @@ class Database:
             query.setdefault("sslmode", "require")
         return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
+    def _open_connection(self, *, autocommit: bool = False):
+        if self.kind == "sqlite":
+            conn = sqlite3.connect(self.path, timeout=30, isolation_level=None if autocommit else "")
+            conn.row_factory = sqlite3.Row
+            return conn
+        try:
+            import psycopg
+        except ImportError as e:
+            raise RuntimeError("PostgreSQL/Neon mode requires psycopg[binary]>=3.2") from e
+        from psycopg.rows import dict_row
+        conn = psycopg.connect(self._postgres_url(), row_factory=dict_row)
+        if autocommit:
+            try:
+                conn.autocommit = True
+            except Exception:
+                pass
+        return conn
+
+    @contextmanager
+    def session(self):
+        """Reuse one physical connection for a bounded serverless operation.
+
+        The session connection runs in autocommit mode so every durable write is
+        committed immediately. This avoids hundreds of TLS/Postgres handshakes on
+        Neon without turning the whole market cycle into one fragile long transaction.
+        """
+        if self._session_conn is not None:
+            yield self
+            return
+        conn = self._open_connection(autocommit=True)
+        self._session_conn = conn
+        try:
+            yield self
+        finally:
+            self._session_conn = None
+            conn.close()
+
     @contextmanager
     def connect(self):
-        if self.kind == "sqlite":
-            conn = sqlite3.connect(self.path, timeout=30)
-            conn.row_factory = sqlite3.Row
-        else:
-            try:
-                import psycopg
-            except ImportError as e:
-                raise RuntimeError("PostgreSQL/Neon mode requires psycopg[binary]>=3.2") from e
-            from psycopg.rows import dict_row
-            conn = psycopg.connect(self._postgres_url(), row_factory=dict_row)
+        if self._session_conn is not None:
+            yield self._session_conn
+            return
+        conn = self._open_connection(autocommit=False)
         try:
             yield conn
             conn.commit()

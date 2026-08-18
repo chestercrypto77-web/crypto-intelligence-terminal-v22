@@ -1,0 +1,17 @@
+{
+  "release": "22.8.2",
+  "status": "passed",
+  "tests": 69,
+  "fixes": [
+    "bounded database connection reuse",
+    "Postgres RETURNING ID path",
+    "durable analysed-asset progress",
+    "210-second soft deadline",
+    "stale non-terminal cycle reconciliation",
+    "stage timing telemetry"
+  ],
+  "external_neon_live_rerun": "required after upload",
+  "ai_active": false,
+  "aws_active": false,
+  "restate_active": false
+}

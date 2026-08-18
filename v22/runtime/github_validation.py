@@ -200,13 +200,32 @@ def run_cycle(database_url: str, root: Path, cycle_type: CycleType, scheduled_at
     db = Database(database_url)
     _require_external_database(db)
     db.migrate()
+    # Clean up genuinely abandoned cycles from earlier hard terminations. The
+    # threshold is intentionally longer than one 5-minute cadence so a slow but
+    # still-live run is never declared dead by its immediate successor.
+    stale_minutes = max(6, int(os.getenv("V22_STALE_CYCLE_MINUTES", "8")))
+    repo = BrainRepository(db)
+    repo.reconcile_stale_cycles(utcnow() - timedelta(minutes=stale_minutes))
     ledger = ScheduleEventLedger(db)
     event_id = ledger.start(workflow_name, scheduled_at, cycle_type)
     try:
-        repo = BrainRepository(db)
         collector = LiveEvidenceCollector(root)
-        result = DeterministicBrainCore(repo, collector).run(cycle_type, scheduled_at, workflow_id=os.getenv("GITHUB_RUN_ID") or workflow_name)
-        ledger.finish(event_id, status="SUCCEEDED", cycle_id=result.cycle_id, details={"brain_status": result.status, "analysed_assets": result.analysed_assets, "expected_assets": result.expected_assets})
+        soft_deadline = float(os.getenv("V22_CYCLE_SOFT_DEADLINE_SECONDS", "210"))
+        # One pooled Neon connection is reused for the bounded cycle. It runs in
+        # autocommit mode, so progress remains durable even if GitHub later kills
+        # the process.
+        with db.session():
+            result = DeterministicBrainCore(repo, collector).run(
+                cycle_type, scheduled_at,
+                workflow_id=os.getenv("GITHUB_RUN_ID") or workflow_name,
+                soft_deadline_seconds=soft_deadline,
+            )
+            ledger.finish(event_id, status="SUCCEEDED", cycle_id=result.cycle_id, details={
+                "brain_status": result.status,
+                "analysed_assets": result.analysed_assets,
+                "expected_assets": result.expected_assets,
+                "timings": result.timings,
+            })
         return result.__dict__
     except Exception as exc:
         ledger.finish(event_id, status="FAILED", details={"error_type": type(exc).__name__, "message": str(exc)[:500]})

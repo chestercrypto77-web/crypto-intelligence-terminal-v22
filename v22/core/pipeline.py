@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 import os
+import time
 from typing import Any, Callable
 
 from v22 import __version__
@@ -28,6 +29,7 @@ class CycleResult:
     anomalies: dict[str, str]
     failures: dict[str, str]
     failure_events: int = 0
+    timings: dict[str, float] = field(default_factory=dict)
 
 
 class DeterministicBrainCore:
@@ -84,15 +86,27 @@ class DeterministicBrainCore:
         except Exception:
             pass
 
-    def run(self, cycle_type: CycleType, scheduled_at: datetime, *, workflow_id: str | None = None) -> CycleResult:
+    def run(
+        self,
+        cycle_type: CycleType,
+        scheduled_at: datetime,
+        *,
+        workflow_id: str | None = None,
+        soft_deadline_seconds: float | None = None,
+    ) -> CycleResult:
         if scheduled_at.tzinfo is None:
             raise ValueError("scheduled_at must be timezone-aware")
+        run_started = time.monotonic()
+        deadline = run_started + soft_deadline_seconds if soft_deadline_seconds and soft_deadline_seconds > 0 else None
+        timings: dict[str, float] = {}
 
         # Collection happens first so expected_assets reflects the source's own
         # coverage declaration. Collection failures still receive a canonical cycle.
         try:
             self._trip(FailureStage.COLLECTION)
+            collection_started = time.monotonic()
             batch = self.collector.collect(cycle_type, scheduled_at)
+            timings["collection_seconds"] = round(time.monotonic() - collection_started, 3)
             expected_assets = len(batch.requested_assets)
         except Exception as exc:
             cycle = CycleContract(
@@ -157,6 +171,7 @@ class DeterministicBrainCore:
                 except Exception as coverage_exc:
                     self._capture(cycle_id, FailureStage.COVERAGE_PERSIST, "BrainRepository", coverage_exc, asset_id=asset_id)
 
+        validation_started = time.monotonic()
         validated: list[tuple[Any, Any]] = []
         for asset in batch.assets:
             try:
@@ -197,9 +212,17 @@ class DeterministicBrainCore:
                     self._capture(cycle_id, FailureStage.COVERAGE_PERSIST, "BrainRepository", coverage_exc, asset_id=asset.asset_id)
                 continue
             validated.append((asset, validation))
+        timings["validation_seconds"] = round(time.monotonic() - validation_started, 3)
 
         self.repo.transition_cycle(cycle_id, CycleStatus.CALCULATING)
-        for asset, validation in validated:
+        calculating_started = time.monotonic()
+        for index, (asset, validation) in enumerate(validated):
+            if deadline is not None and time.monotonic() >= deadline:
+                reason = "soft runtime deadline reached before asset processing"
+                for remaining, _ in validated[index:]:
+                    failures.setdefault(remaining.asset_id, reason)
+                    self._record_failed_coverage(cycle_id, remaining.asset_id, False, reason)
+                break
             metric_values: dict[str, Any] = {}
             evidence_ids: dict[str, str] = {}
             try:
@@ -288,15 +311,20 @@ class DeterministicBrainCore:
                     deterministic_completed=True,
                     quality=validation.quality,
                 ))
+                self.repo.refresh_cycle_progress(cycle_id)
             except Exception as exc:
                 reason = f"coverage persistence failed: {type(exc).__name__}: {exc}"
                 failures[asset.asset_id] = reason
                 self._capture(cycle_id, FailureStage.COVERAGE_PERSIST, "BrainRepository", exc, asset_id=asset.asset_id)
 
+        timings["calculating_seconds"] = round(time.monotonic() - calculating_started, 3)
         self.repo.transition_cycle(cycle_id, CycleStatus.PERSISTING)
+        finalise_started = time.monotonic()
         try:
             self._trip(FailureStage.FINALISE)
             final = self.repo.finalise_cycle(cycle_id)
+            timings["finalise_seconds"] = round(time.monotonic() - finalise_started, 3)
+            timings["total_seconds"] = round(time.monotonic() - run_started, 3)
         except Exception as exc:
             self._capture(cycle_id, FailureStage.FINALISE, "BrainRepository", exc)
             self._mark_failed(cycle_id, "finalisation failed")
@@ -312,6 +340,7 @@ class DeterministicBrainCore:
             anomalies=anomalies,
             failures=failures,
             failure_events=len(self.repo.list_failure_events(cycle_id)),
+            timings=timings,
         )
 
     def _record_failed_coverage(self, cycle_id: str, asset_id: str, evidence_collected: bool, reason: str) -> None:
