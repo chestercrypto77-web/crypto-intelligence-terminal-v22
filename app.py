@@ -222,6 +222,35 @@ except Exception as exc:
     st.code(f"{type(exc).__name__}: {exc}")
     st.stop()
 
+# Compatibility bridge: older V22 Streamlit readers returned a dictionary,
+# while the V22.10 reader returns a BrainSnapshot dataclass. Normalise both
+# shapes here so deployment order cannot break the UI.
+if isinstance(snapshot, dict):
+    class _SnapshotCompat:
+        pass
+    _s = _SnapshotCompat()
+    aliases = {
+        "cycles": ("cycles", "brain_cycles"),
+        "evidence": ("evidence", "recent_evidence", "evidence_records"),
+        "observations": ("observations", "recent_observations", "observation_records"),
+        "failures": ("failures", "recent_failures", "brain_failure_events"),
+        "schedule_events": ("schedule_events", "runtime_schedule_events"),
+        "findings": ("findings", "specialist_findings"),
+        "syntheses": ("syntheses", "synthesis_records"),
+        "episodes": ("episodes",),
+        "outcomes": ("outcomes", "episode_outcomes"),
+        "ai_calls": ("ai_calls",),
+        "semantic_memory": ("semantic_memory", "semantic_memory_queue"),
+    }
+    for attr, keys in aliases.items():
+        value = []
+        for key in keys:
+            if key in snapshot and snapshot.get(key) is not None:
+                value = snapshot.get(key)
+                break
+        setattr(_s, attr, value if isinstance(value, list) else [])
+    snapshot = _s
+
 holdings=load_holdings()
 holding_map={str(x.get("symbol") or "").upper():x for x in holdings}
 evidence,observations,evidence_time,observation_time=build_maps(snapshot)

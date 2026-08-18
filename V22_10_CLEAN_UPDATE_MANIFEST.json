@@ -1,5 +1,5 @@
 {
-  "release": "V22.10 Clean Platform Bridge",
+  "release": "22.10.1",
   "base": "V22.9 + V22 Streamlit Foundation",
   "upload_file_count": 8,
   "functional_files": [
@@ -43,5 +43,6 @@
       "size": 7906,
       "sha256": "ccfcf8de169ab28561308dda37ac5e47113a6f6f62e6217f3cfb4549cceb893c"
     }
-  ]
+  ],
+  "hotfix": "Streamlit snapshot compatibility bridge"
 }

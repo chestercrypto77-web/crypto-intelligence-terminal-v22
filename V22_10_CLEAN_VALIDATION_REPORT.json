@@ -18,5 +18,6 @@
     "trading_execution": "LOCKED",
     "specialist_ai": "OFF"
   },
-  "note": "This package is the replacement for the earlier oversized V22.10 archive."
+  "note": "This package is the replacement for the earlier oversized V22.10 archive.",
+  "hotfix": "22.10.1 snapshot compatibility bridge"
 }
