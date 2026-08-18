@@ -1,0 +1,22 @@
+{
+  "release": "V22.10 Clean Platform Bridge",
+  "validated_at_utc": "2026-08-18",
+  "upload_file_count": 8,
+  "checks": {
+    "clean_overlay_reconstruction": "passed",
+    "python_compile": "passed",
+    "v22_pytest": "76 passed",
+    "release_smoke_test": "passed",
+    "navigation_pages": 11,
+    "portfolio_json": "passed",
+    "legacy_conviction_scores_removed": true,
+    "protected_database_credentials": "not present",
+    "scalability_smoke": "COMPLETED 100/100",
+    "scalability_ai_calls": 0,
+    "workflow_files_changed": false,
+    "database_migration": false,
+    "trading_execution": "LOCKED",
+    "specialist_ai": "OFF"
+  },
+  "note": "This package is the replacement for the earlier oversized V22.10 archive."
+}

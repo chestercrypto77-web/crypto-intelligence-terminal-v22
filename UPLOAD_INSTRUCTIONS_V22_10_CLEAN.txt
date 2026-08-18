@@ -1,0 +1,14 @@
+V22.10 PLATFORM BRIDGE — CLEAN ESSENTIAL UPDATE (8 FILES)
+
+1. DO NOT upload the earlier 378-file V22.10 archive.
+2. Extract this ZIP on your computer.
+3. Open GitHub repo: crypto-intelligence-terminal-v22, branch main.
+4. Click Add file -> Upload files.
+5. Drag ALL 8 extracted files/folders into the upload area in one upload.
+6. Commit directly to main with message:
+   Install V22.10 Clean Platform Bridge
+7. Keep the existing Streamlit DATABASE_URL secret unchanged.
+8. Wait for Streamlit to redeploy, then open the app and click through the sidebar pages.
+
+This overlay does NOT replace GitHub workflows, does NOT migrate Neon, and does NOT restart old paper wallets.
+Trading Desk and Strategy Lab remain locked until the fresh V22 paper-trading layer is built.

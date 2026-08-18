@@ -1,0 +1,366 @@
+{
+  "currency": "USD",
+  "source_note": "Migrated from legacy terminal holdings; subjective conviction fields intentionally removed.",
+  "holdings": [
+    {
+      "symbol": "BTC",
+      "name": "Bitcoin",
+      "coin_id": "bitcoin",
+      "tokens": 0.15819773,
+      "tier": "Core",
+      "narrative": "Bitcoin"
+    },
+    {
+      "symbol": "SOL",
+      "name": "Solana",
+      "coin_id": "solana",
+      "tokens": 73.13710465,
+      "tier": "Core",
+      "narrative": "Layer 1"
+    },
+    {
+      "symbol": "AVAX",
+      "name": "Avalanche",
+      "coin_id": "avalanche-2",
+      "tokens": 155.5786594,
+      "tier": "Core",
+      "narrative": "Layer 1"
+    },
+    {
+      "symbol": "COTI",
+      "name": "COTI",
+      "coin_id": "coti",
+      "tokens": 36860.93168,
+      "tier": "Core",
+      "narrative": "Privacy / Payments"
+    },
+    {
+      "symbol": "POL",
+      "name": "Polygon Ecosystem Token",
+      "coin_id": "polygon-ecosystem-token",
+      "tokens": 5744.900489,
+      "tier": "Core",
+      "narrative": "Layer 2 / Tokenisation"
+    },
+    {
+      "symbol": "ZIL",
+      "name": "Zilliqa",
+      "coin_id": "zilliqa",
+      "tokens": 144314.2487,
+      "tier": "Core",
+      "narrative": "Layer 1"
+    },
+    {
+      "symbol": "ONDO",
+      "name": "Ondo",
+      "coin_id": "ondo-finance",
+      "tokens": 848.8129832,
+      "tier": "Core",
+      "narrative": "RWA / Tokenisation"
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "coin_id": "polkadot",
+      "tokens": 415.2054283,
+      "tier": "Core",
+      "narrative": "Interoperability"
+    },
+    {
+      "symbol": "SUI",
+      "name": "Sui",
+      "coin_id": "sui",
+      "tokens": 247.6849079,
+      "tier": "Core",
+      "narrative": "Layer 1"
+    },
+    {
+      "symbol": "NEAR",
+      "name": "NEAR Protocol",
+      "coin_id": "near",
+      "tokens": 98.89177795,
+      "tier": "Core",
+      "narrative": "AI / Layer 1"
+    },
+    {
+      "symbol": "SUPER",
+      "name": "SuperVerse",
+      "coin_id": "superfarm",
+      "tokens": 1362.059053,
+      "tier": "Core",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "S",
+      "name": "Sonic",
+      "coin_id": "sonic-3",
+      "tokens": 4190.378059,
+      "tier": "Core",
+      "narrative": "Layer 1 / DeFi"
+    },
+    {
+      "symbol": "AIOZ",
+      "name": "AIOZ Network",
+      "coin_id": "aioz-network",
+      "tokens": 1553.802358,
+      "tier": "Core",
+      "narrative": "AI / DePIN"
+    },
+    {
+      "symbol": "FIL",
+      "name": "Filecoin",
+      "coin_id": "filecoin",
+      "tokens": 84.29623079,
+      "tier": "Core",
+      "narrative": "DePIN / Storage"
+    },
+    {
+      "symbol": "OM",
+      "name": "MANTRA",
+      "coin_id": "mantra-dao",
+      "tokens": 10219.72406,
+      "tier": "Core",
+      "narrative": "RWA / Tokenisation"
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "coin_id": "tether",
+      "tokens": 41.5836142,
+      "tier": "Secondary",
+      "narrative": "Stablecoin"
+    },
+    {
+      "symbol": "SEI",
+      "name": "Sei",
+      "coin_id": "sei-network",
+      "tokens": 948.5449288,
+      "tier": "Secondary",
+      "narrative": "Layer 1 / Trading"
+    },
+    {
+      "symbol": "RUNE",
+      "name": "THORChain",
+      "coin_id": "thorchain",
+      "tokens": 87.4678301,
+      "tier": "Secondary",
+      "narrative": "DeFi / Interoperability"
+    },
+    {
+      "symbol": "SAND",
+      "name": "The Sandbox",
+      "coin_id": "the-sandbox",
+      "tokens": 770.6327344,
+      "tier": "Secondary",
+      "narrative": "Gaming / Metaverse"
+    },
+    {
+      "symbol": "ONE",
+      "name": "Harmony",
+      "coin_id": "harmony",
+      "tokens": 25271.86894,
+      "tier": "Secondary",
+      "narrative": "Layer 1"
+    },
+    {
+      "symbol": "WIN",
+      "name": "WINkLink",
+      "coin_id": "wink",
+      "tokens": 1074141.235,
+      "tier": "Secondary",
+      "narrative": "Oracle / Gaming"
+    },
+    {
+      "symbol": "AR",
+      "name": "Arweave",
+      "coin_id": "arweave",
+      "tokens": 15.15578553,
+      "tier": "Secondary",
+      "narrative": "DePIN / Storage"
+    },
+    {
+      "symbol": "BEAM",
+      "name": "Beam",
+      "coin_id": "beam-2",
+      "tokens": 18123.08568,
+      "tier": "Secondary",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "SHIB",
+      "name": "Shiba Inu",
+      "coin_id": "shiba-inu",
+      "tokens": 5128205.128,
+      "tier": "Secondary",
+      "narrative": "Meme"
+    },
+    {
+      "symbol": "ENJ",
+      "name": "Enjin Coin",
+      "coin_id": "enjincoin",
+      "tokens": 968.9751398,
+      "tier": "Secondary",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "IMX",
+      "name": "Immutable X",
+      "coin_id": "immutable-x",
+      "tokens": 221.5560193,
+      "tier": "Secondary",
+      "narrative": "Gaming / Layer 2"
+    },
+    {
+      "symbol": "VET",
+      "name": "VeChain",
+      "coin_id": "vechain",
+      "tokens": 4898.799392,
+      "tier": "Secondary",
+      "narrative": "Enterprise / RWA"
+    },
+    {
+      "symbol": "SC",
+      "name": "Siacoin",
+      "coin_id": "siacoin",
+      "tokens": 44993.26642,
+      "tier": "Secondary",
+      "narrative": "DePIN / Storage"
+    },
+    {
+      "symbol": "BTT",
+      "name": "BitTorrent",
+      "coin_id": "bittorrent",
+      "tokens": 68242598.63,
+      "tier": "Secondary",
+      "narrative": "DePIN / Storage"
+    },
+    {
+      "symbol": "TLM",
+      "name": "Alien Worlds",
+      "coin_id": "alien-worlds",
+      "tokens": 8445.639713,
+      "tier": "Legacy",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "PYR",
+      "name": "Vulcan Forged",
+      "coin_id": "vulcan-forged",
+      "tokens": 117.6364851,
+      "tier": "Legacy",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "PAAL",
+      "name": "PAAL AI",
+      "coin_id": "paal-ai",
+      "tokens": 1171.358893,
+      "tier": "Legacy",
+      "narrative": "AI"
+    },
+    {
+      "symbol": "SKL",
+      "name": "SKALE Network",
+      "coin_id": "skale",
+      "tokens": 1654.186299,
+      "tier": "Legacy",
+      "narrative": "Layer 2"
+    },
+    {
+      "symbol": "AERO",
+      "name": "Aerodrome Finance",
+      "coin_id": "aerodrome-finance",
+      "tokens": 12.55965837,
+      "tier": "Legacy",
+      "narrative": "DeFi / DEX"
+    },
+    {
+      "symbol": "LUNC",
+      "name": "Terra Luna Classic",
+      "coin_id": "terra-luna",
+      "tokens": 93935.52265,
+      "tier": "Legacy",
+      "narrative": "Legacy Layer 1"
+    },
+    {
+      "symbol": "GALA",
+      "name": "Gala",
+      "coin_id": "gala",
+      "tokens": 1922.276383,
+      "tier": "Legacy",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "UOS",
+      "name": "Ultra",
+      "coin_id": "ultra",
+      "tokens": 1163.484656,
+      "tier": "Legacy",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "UFO",
+      "name": "UFO Gaming",
+      "coin_id": "ufo-gaming",
+      "tokens": 126343814.9,
+      "tier": "Legacy",
+      "narrative": "Gaming"
+    },
+    {
+      "symbol": "DENT",
+      "name": "Dent",
+      "coin_id": "dent",
+      "tokens": 95067.05488,
+      "tier": "Legacy",
+      "narrative": "Telecom / Payments"
+    },
+    {
+      "symbol": "MEW",
+      "name": "Cat in a Dogs World",
+      "coin_id": "cat-in-a-dogs-world",
+      "tokens": 5845.374106,
+      "tier": "Legacy",
+      "narrative": "Meme"
+    },
+    {
+      "symbol": "DOGE",
+      "name": "Dogecoin",
+      "coin_id": "dogecoin",
+      "tokens": 20.33418096,
+      "tier": "Legacy",
+      "narrative": "Meme"
+    },
+    {
+      "symbol": "GRT",
+      "name": "The Graph",
+      "coin_id": "the-graph",
+      "tokens": 77.94718297,
+      "tier": "Legacy",
+      "narrative": "Data / AI"
+    },
+    {
+      "symbol": "VRA",
+      "name": "Verasity",
+      "coin_id": "verasity",
+      "tokens": 95881.39365,
+      "tier": "Legacy",
+      "narrative": "Gaming / Advertising"
+    },
+    {
+      "symbol": "VTHO",
+      "name": "VeThor Token",
+      "coin_id": "vethor-token",
+      "tokens": 1131.011531,
+      "tier": "Legacy",
+      "narrative": "Enterprise"
+    },
+    {
+      "symbol": "XTZ",
+      "name": "Tezos",
+      "coin_id": "tezos",
+      "tokens": 1.0,
+      "tier": "Legacy",
+      "narrative": "Layer 1"
+    }
+  ]
+}

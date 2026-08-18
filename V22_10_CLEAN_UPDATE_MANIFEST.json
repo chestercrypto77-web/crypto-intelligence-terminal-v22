@@ -1,0 +1,47 @@
+{
+  "release": "V22.10 Clean Platform Bridge",
+  "base": "V22.9 + V22 Streamlit Foundation",
+  "upload_file_count": 8,
+  "functional_files": [
+    "app.py",
+    "v22/ui/neon_reader.py",
+    "config/portfolio_holdings.json",
+    "scripts/release_smoke_test.py"
+  ],
+  "workflow_changes": false,
+  "database_migration": false,
+  "ai_enabled": false,
+  "trading_execution": "LOCKED",
+  "files": [
+    {
+      "path": "README_V22_10.md",
+      "size": 573,
+      "sha256": "bffd73327e0ec379938410a12d7cacc6f91b990d24d04bf1bfac0e8a773a4311"
+    },
+    {
+      "path": "UPLOAD_INSTRUCTIONS_V22_10_CLEAN.txt",
+      "size": 769,
+      "sha256": "c929d08c72e1893b1bd079ede8be7adc241c7e7cb1a96c831f27b297be7fab85"
+    },
+    {
+      "path": "app.py",
+      "size": 24291,
+      "sha256": "07e30dc91e69f4e4e9bec9ba2365d14fbbf9def0d858624902fe7491bac18d37"
+    },
+    {
+      "path": "config/portfolio_holdings.json",
+      "size": 8217,
+      "sha256": "b622b834c49594dbade937fb0366a53b6f06ce9bef3e19cd18d1897516e0549f"
+    },
+    {
+      "path": "scripts/release_smoke_test.py",
+      "size": 8195,
+      "sha256": "ce81ffac97356430f1b30b2a510a8393214b0e1d67c2e36e19a4cdf4444f7485"
+    },
+    {
+      "path": "v22/ui/neon_reader.py",
+      "size": 7906,
+      "sha256": "ccfcf8de169ab28561308dda37ac5e47113a6f6f62e6217f3cfb4549cceb893c"
+    }
+  ]
+}
