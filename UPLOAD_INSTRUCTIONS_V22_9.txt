@@ -1,0 +1,12 @@
+V22.9 Scalable Observation Engine
+
+1. Extract this ZIP.
+2. Upload everything inside over the existing crypto-intelligence-terminal-v22 repository.
+3. Do not delete existing files or folders first.
+4. Commit directly to main.
+Suggested commit: Install V22.9 Scalable Observation Engine
+
+No workflow file needs manual editing.
+No new account, secret, paid service, AWS, Restate or AI setup is required.
+
+After upload, manually run ONE V22 5-Minute Free Validation cycle on the existing 16-token universe. Verify GitHub success and Neon COMPLETED 16/16 before increasing the live universe.

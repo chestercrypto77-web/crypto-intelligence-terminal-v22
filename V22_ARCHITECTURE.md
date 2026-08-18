@@ -213,3 +213,11 @@ The validation runtime is now GitHub Actions + Neon. This is intentionally a pro
 - Scheduled workflows use read-only repository permissions and do not commit runtime JSON.
 - AWS Lambda remains an optional adapter and is not activated during no-card validation.
 - Restate and AI remain deferred until deterministic 24/7 viability is measured.
+
+## V22.9 — Scalable observation engine
+
+The live collector now scales by bounded concurrent waves instead of serial token-by-token HTTP. This changes execution strategy only; the canonical evidence, observation, coverage and Neon memory contracts remain the same.
+
+For future wide universes, each asset can carry an explicit observation tier (`A/B/C`) and five-minute depth (`FULL/SCREEN`). Tier A / FULL preserves the complete 1m+5m observation path. SCREEN uses one 5m request and a smaller deterministic surveillance set. Tier/depth is written into evidence and observation metadata so a later agent or learning engine can never confuse screening evidence with full evidence.
+
+The production 16-token universe remains Tier A / FULL in V22.9. Universe expansion must be benchmarked in stages (25 -> 50 -> 75 -> 100+) against real cycle duration, provider health, Neon writes and GitHub schedule coverage before it becomes the default.

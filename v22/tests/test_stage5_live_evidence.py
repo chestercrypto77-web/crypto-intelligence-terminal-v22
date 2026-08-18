@@ -100,14 +100,19 @@ def test_stale_live_bars_are_rejected_by_existing_validator(tmp_path: Path):
     assert 'stale' in result.failures['ETH']
 
 
-def test_rate_limit_stops_extra_requests_and_marks_remaining_unavailable(tmp_path: Path):
+def test_rate_limit_stops_future_waves_and_marks_remaining_unavailable(tmp_path: Path):
     at=datetime(2026,8,17,6,15,tzinfo=timezone.utc)
-    three=(LiveAssetSpec('ETH','ETHUSDT'),LiveAssetSpec('LINK','LINKUSDT'),LiveAssetSpec('BTC','BTCUSDT'))
+    four=(
+        LiveAssetSpec('ETH','ETHUSDT'), LiveAssetSpec('LINK','LINKUSDT'),
+        LiveAssetSpec('BTC','BTCUSDT'), LiveAssetSpec('SOL','SOLUSDT'),
+    )
     http=FakeBinance(rate_limit_symbol='LINKUSDT')
-    batch=LiveEvidenceCollector(tmp_path,http_client=http,asset_specs=three).collect(CycleType.MARKET_15M,at)
+    batch=LiveEvidenceCollector(
+        tmp_path,http_client=http,asset_specs=four,max_workers=2,batch_size=2
+    ).collect(CycleType.MARKET_15M,at)
     assert batch.source_health['rate_limited'] is True
-    assert batch.unavailable_assets == ('LINK','BTC')
-    assert [c[1]['symbol'] for c in http.calls] == ['ETHUSDT','LINKUSDT']
+    assert batch.unavailable_assets == ('LINK','BTC','SOL')
+    assert set(c[1]['symbol'] for c in http.calls) == {'ETHUSDT','LINKUSDT'}
 
 
 def test_live_end_to_end_completed_when_all_assets_fresh(tmp_path: Path):

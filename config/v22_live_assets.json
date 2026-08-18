@@ -1,23 +1,119 @@
 {
-  "version": 1,
+  "version": 2,
   "provider": "binance-public-market-data",
-  "notes": "Stage 5 free/no-key live validation universe. Unsupported pairs are reported as unavailable; they never count as analysed.",
+  "notes": "V22.9 scalable live universe. Current 16 assets remain Tier A / FULL. Future wider-universe assets may use Tier B/C with SCREEN depth for cheaper 5-minute surveillance.",
   "assets": [
-    {"asset_id":"BTC","binance_symbol":"BTCUSDT","enabled":true},
-    {"asset_id":"ETH","binance_symbol":"ETHUSDT","enabled":true},
-    {"asset_id":"SOL","binance_symbol":"SOLUSDT","enabled":true},
-    {"asset_id":"XRP","binance_symbol":"XRPUSDT","enabled":true},
-    {"asset_id":"BNB","binance_symbol":"BNBUSDT","enabled":true},
-    {"asset_id":"ADA","binance_symbol":"ADAUSDT","enabled":true},
-    {"asset_id":"DOGE","binance_symbol":"DOGEUSDT","enabled":true},
-    {"asset_id":"LINK","binance_symbol":"LINKUSDT","enabled":true},
-    {"asset_id":"AVAX","binance_symbol":"AVAXUSDT","enabled":true},
-    {"asset_id":"TRX","binance_symbol":"TRXUSDT","enabled":true},
-    {"asset_id":"DOT","binance_symbol":"DOTUSDT","enabled":true},
-    {"asset_id":"SUI","binance_symbol":"SUIUSDT","enabled":true},
-    {"asset_id":"HBAR","binance_symbol":"HBARUSDT","enabled":true},
-    {"asset_id":"ONDO","binance_symbol":"ONDOUSDT","enabled":true},
-    {"asset_id":"COTI","binance_symbol":"COTIUSDT","enabled":true},
-    {"asset_id":"ZIL","binance_symbol":"ZILUSDT","enabled":true}
+    {
+      "asset_id": "BTC",
+      "binance_symbol": "BTCUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "ETH",
+      "binance_symbol": "ETHUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "SOL",
+      "binance_symbol": "SOLUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "XRP",
+      "binance_symbol": "XRPUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "BNB",
+      "binance_symbol": "BNBUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "ADA",
+      "binance_symbol": "ADAUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "DOGE",
+      "binance_symbol": "DOGEUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "LINK",
+      "binance_symbol": "LINKUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "AVAX",
+      "binance_symbol": "AVAXUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "TRX",
+      "binance_symbol": "TRXUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "DOT",
+      "binance_symbol": "DOTUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "SUI",
+      "binance_symbol": "SUIUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "HBAR",
+      "binance_symbol": "HBARUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "ONDO",
+      "binance_symbol": "ONDOUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "COTI",
+      "binance_symbol": "COTIUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    },
+    {
+      "asset_id": "ZIL",
+      "binance_symbol": "ZILUSDT",
+      "enabled": true,
+      "tier": "A",
+      "micro_depth": "FULL"
+    }
   ]
 }

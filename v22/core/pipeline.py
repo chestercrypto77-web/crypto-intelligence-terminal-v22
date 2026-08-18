@@ -55,8 +55,8 @@ class DeterministicBrainCore:
         self.provenance = Provenance(
             brain_version=__version__,
             software_commit=software_commit or os.getenv("GITHUB_SHA", "local"),
-            calculation_version="stage5-v1",
-            schema_version="003",
+            calculation_version="stage9-scalable-v1",
+            schema_version="004",
         )
 
     def _trip(self, stage: FailureStage, asset_id: str | None = None) -> None:
@@ -253,7 +253,9 @@ class DeterministicBrainCore:
 
             try:
                 self._trip(FailureStage.CALCULATION, asset.asset_id)
-                derived = calculate(cycle_type, metric_values)
+                observation_depth = str(asset.metadata.get("observation_depth") or "FULL").upper()
+                observation_tier = str(asset.metadata.get("observation_tier") or "A").upper()
+                derived = calculate(cycle_type, metric_values, observation_depth=observation_depth)
                 level, reasons = anomaly_level(cycle_type, metric_values, derived)
             except Exception as exc:
                 reason = f"deterministic calculation failed: {type(exc).__name__}: {exc}"
@@ -274,7 +276,7 @@ class DeterministicBrainCore:
                         calculation=item.calculation,
                         quality=validation.quality,
                         evidence_ids=refs,
-                        metadata=item.metadata,
+                        metadata={**dict(item.metadata), "observation_tier": observation_tier, "observation_depth": observation_depth},
                     )
                     self._trip(FailureStage.OBSERVATION_PERSIST, asset.asset_id)
                     self.repo.record_observation(obs)
@@ -291,7 +293,7 @@ class DeterministicBrainCore:
                     calculation="deterministic_anomaly_v1",
                     quality=validation.quality,
                     evidence_ids=anomaly_refs,
-                    metadata={"reasons": list(reasons)},
+                    metadata={"reasons": list(reasons), "observation_tier": observation_tier, "observation_depth": observation_depth},
                 ))
                 observation_count += 1
             except Exception as exc:

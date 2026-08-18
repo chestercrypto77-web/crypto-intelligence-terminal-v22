@@ -30,7 +30,7 @@ def _direction(value: float, deadband: float = 0.05) -> str:
     return "FLAT"
 
 
-def calculate(cycle_type: CycleType, metrics: dict[str, Any]) -> list[DerivedObservation]:
+def calculate(cycle_type: CycleType, metrics: dict[str, Any], *, observation_depth: str = "FULL") -> list[DerivedObservation]:
     if cycle_type == CycleType.MARKET_15M:
         returns = [_num(metrics, x) for x in ("return_15m_pct", "return_1h_pct", "return_4h_pct", "return_24h_pct")]
         positive = sum(1 for x in returns if x > 0.05)
@@ -54,17 +54,30 @@ def calculate(cycle_type: CycleType, metrics: dict[str, Any]) -> list[DerivedObs
             DerivedObservation("market_structure", structure, "breakout_structure_v1", ("breakout","breakdown"), {}),
         ]
 
-    one_rvol = _num(metrics, "relative_volume_1m")
+    depth = (observation_depth or "FULL").upper()
     five_rvol = _num(metrics, "relative_volume_5m")
-    one_d = _num(metrics, "relative_volume_delta_1m")
     five_d = _num(metrics, "relative_volume_delta_5m")
+    structure = "BREAKOUT" if bool(metrics.get("breakout_5m")) else "BREAKDOWN" if bool(metrics.get("breakdown_5m")) else "RANGE"
+    if depth == "SCREEN":
+        five_ret = _num(metrics, "return_5m_5bar_pct")
+        return [
+            DerivedObservation("screen_momentum_5m", _direction(five_ret, 0.25), "screen_return_direction_v1",
+                               ("return_5m_5bar_pct",), {"return_5m_5bar_pct": five_ret, "observation_depth": "SCREEN"}),
+            DerivedObservation("volume_flow_5m", _direction(five_d, 0.05), "rvol_delta_direction_v1",
+                               ("relative_volume_delta_5m",), {"delta": five_d, "observation_depth": "SCREEN"}),
+            DerivedObservation("volume_participation", "ELEVATED" if five_rvol >= 1.25 else "LOW" if five_rvol <= 0.5 else "NORMAL",
+                               "relative_volume_band_v1", ("relative_volume_5m",), {"five_minute": five_rvol, "observation_depth": "SCREEN"}),
+            DerivedObservation("market_structure", structure, "breakout_structure_v1", ("breakout_5m","breakdown_5m"), {"observation_depth": "SCREEN"}),
+        ]
+
+    one_rvol = _num(metrics, "relative_volume_1m")
+    one_d = _num(metrics, "relative_volume_delta_1m")
     price = _num(metrics, "price_usd")
     e9_1, e21_1 = _num(metrics, "ema9_1m"), _num(metrics, "ema21_1m")
     e9_5, e21_5 = _num(metrics, "ema9_5m"), _num(metrics, "ema21_5m")
     one_dir = "UP" if price > e9_1 > e21_1 else "DOWN" if price < e9_1 < e21_1 else "MIXED"
     five_dir = "UP" if price > e9_5 > e21_5 else "DOWN" if price < e9_5 < e21_5 else "MIXED"
     alignment = one_dir if one_dir == five_dir and one_dir != "MIXED" else "MIXED"
-    structure = "BREAKOUT" if bool(metrics.get("breakout_5m")) else "BREAKDOWN" if bool(metrics.get("breakdown_5m")) else "RANGE"
     return [
         DerivedObservation("micro_trend_alignment", alignment, "ema_alignment_1m_5m_v1",
                            ("price_usd","ema9_1m","ema21_1m","ema9_5m","ema21_5m"), {"one_minute": one_dir, "five_minute": five_dir}),

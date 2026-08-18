@@ -50,3 +50,12 @@ Install/replace the four V22.8 workflow files in `.github/workflows`:
 - `nightly_deep_learning.yml`
 
 After installation, manually run 5m and 15m once. Verify each workflow succeeds, then verify Neon contains corresponding `runtime_schedule_events`, `brain_cycles`, evidence, observations and coverage. Only then leave schedules active.
+
+## V22.9 scalable-universe activation gate
+
+V22.9 does not immediately expand the live token list. After installing the release:
+1. Manually run one 5-minute cycle with the existing 16 Tier A / FULL assets.
+2. Require GitHub success and Neon `COMPLETED` 16/16.
+3. Only then benchmark wider live universes in controlled stages: 25, 50, 75, then 100+.
+4. Keep the four-minute GitHub hard timeout unchanged during validation; if a wider universe cannot fit, reduce depth/concurrency intelligently rather than hiding the bottleneck.
+5. AI remains off during scalability validation.

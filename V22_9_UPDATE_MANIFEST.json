@@ -1,0 +1,19 @@
+{
+  "version": "22.9.0",
+  "release": "Scalable Observation Engine",
+  "overlay_base": "22.8.2",
+  "database_migration": "none",
+  "workflow_changes": "none",
+  "features": [
+    "bounded concurrent live market collection",
+    "wave-based provider rate-limit containment",
+    "A/B/C observation tier policy",
+    "FULL versus SCREEN five-minute depth",
+    "tier/depth evidence and observation provenance",
+    "100-asset offline scalability smoke"
+  ],
+  "current_live_universe": "16 assets remain Tier A / FULL",
+  "ai_enabled": false,
+  "aws_enabled": false,
+  "restate_enabled": false
+}

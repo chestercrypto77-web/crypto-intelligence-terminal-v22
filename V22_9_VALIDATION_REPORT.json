@@ -1,0 +1,26 @@
+{
+  "release": "22.9.0",
+  "status": "passed",
+  "tests": 73,
+  "compile": "passed",
+  "release_smoke": "passed",
+  "protected_data_preflight": "passed",
+  "stage1_memory_regression": "passed",
+  "stage3_failure_regression": "passed",
+  "stage5_live_evidence_regression": "passed",
+  "stage8_runtime_regression": "passed",
+  "scalability_smoke": {
+    "status": "COMPLETED",
+    "expected_assets": 100,
+    "analysed_assets": 100,
+    "http_calls": 120,
+    "max_concurrent_http": 8,
+    "evidence_records": 1100,
+    "observation_records": 520,
+    "ai_calls": 0
+  },
+  "external_live_16_asset_rerun": "required after upload",
+  "ai_active": false,
+  "aws_active": false,
+  "restate_active": false
+}
