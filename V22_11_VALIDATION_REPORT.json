@@ -1,0 +1,30 @@
+{
+  "release": "22.11.0",
+  "status": "PASSED",
+  "tests": {
+    "full_v22_regression": "82 passed",
+    "paper_trading_safety": "6 passed",
+    "python_compile": "PASSED",
+    "release_smoke": "PASSED",
+    "same_cycle_retry_idempotency": "PASSED",
+    "close_then_reopen_asset": "PASSED",
+    "small_probe_and_cash_reserve": "PASSED",
+    "no_averaging_down": "PASSED",
+    "hard_stop": "PASSED",
+    "learning_never_above_baseline": "PASSED",
+    "protected_data_scan": "PASSED"
+  },
+  "simulation": {
+    "repeated_bullish_cycles_then_adverse_exit": "PASSED",
+    "single_asset_exposure_during_simulation": "<= 3.5% because probe + two adds",
+    "hard_single_asset_cap": "6%",
+    "hard_total_deployment_cap": "30%",
+    "minimum_cash_reserve": "70%"
+  },
+  "notes": [
+    "Existing V22 market evidence is retained.",
+    "Fresh paper wallets are created idempotently on first run.",
+    "No old paper-wallet balances are imported.",
+    "No live execution code path is enabled."
+  ]
+}

@@ -20,7 +20,7 @@ from v22.ui.neon_reader import (
 )
 
 APP_NAME = "Crypto Intelligence Terminal"
-APP_VERSION = "22.10.2-aud-charcoal"
+APP_VERSION = "22.11-paper-learning"
 ROOT = Path(__file__).resolve().parent
 HOLDINGS_FILE = ROOT / "config" / "portfolio_holdings.json"
 
@@ -286,6 +286,11 @@ if isinstance(snapshot, dict):
         "outcomes": ("outcomes", "episode_outcomes"),
         "ai_calls": ("ai_calls",),
         "semantic_memory": ("semantic_memory", "semantic_memory_queue"),
+        "paper_brains": ("paper_brains",),
+        "paper_positions": ("paper_positions",),
+        "paper_trades": ("paper_trades",),
+        "paper_decisions": ("paper_decisions",),
+        "paper_lessons": ("paper_lessons",),
     }
     for attr, keys in aliases.items():
         value = []
@@ -408,29 +413,71 @@ elif selection=="Research":
         for x in snapshot.syntheses[:10]:st.markdown(f'<div class="notice">{esc(x.get("summary"))}</div>',unsafe_allow_html=True)
 
 elif selection=="Trading Desk":
-    st.markdown('<div class="locked"><b>Execution is intentionally locked.</b><br>The new V22 Brain is observing and persisting evidence, but no live or paper trade permission is being inferred from the old platform. Trading will only be enabled after the decision, risk and outcome-learning gates are validated.</div>',unsafe_allow_html=True)
-    section("What the desk can see now")
-    for r in sorted(asset_rows,key=lambda x:len(x["reasons"]),reverse=True)[:6]:render_attention(r)
+    if not snapshot.paper_brains:
+        st.markdown('<div class="locked"><b>Fresh paper competition is installed but has not completed its first run yet.</b><br>Live execution remains LOCKED. The scheduled paper workflow will initialise four equal A$100,000 wallets and begin from current V22 evidence.</div>',unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="notice"><b>PAPER ONLY · fresh V22 competition</b><br>Each brain has an isolated wallet. Entries start at 1.5% of capital, scale-ins are capped, at least 70% cash reserve is protected, and no live execution path exists.</div>',unsafe_allow_html=True)
+        bdf=pd.DataFrame(snapshot.paper_brains)
+        bdf["Win rate %"]=bdf.apply(lambda r:(100*fnum(r.get("wins"))/max(1,fnum(r.get("trades_closed")))),axis=1)
+        bdf["Cash AUD"]=bdf["cash_aud"].map(lambda x:money(x,source_currency="AUD"))
+        bdf["Realised P/L AUD"]=bdf["realised_pnl_aud"].map(lambda x:money(x,source_currency="AUD"))
+        bdf["Risk size"]=bdf["risk_multiplier"].map(lambda x:f"{fnum(x)*100:.0f}% baseline")
+        st.dataframe(bdf[["name","strategy_key","Cash AUD","Realised P/L AUD","trades_closed","Win rate %","Risk size"]].rename(columns={"name":"Brain","strategy_key":"Method","trades_closed":"Closed trades"}),use_container_width=True,hide_index=True)
+    section("Open paper positions")
+    opens=[p for p in snapshot.paper_positions if str(p.get("status"))=="OPEN"]
+    if opens:
+        pdf=pd.DataFrame(opens)
+        pdf["Entry"]=pdf["avg_entry_price_aud"].map(lambda x:money(x,source_currency="AUD"))
+        pdf["Cost"]=pdf["cost_basis_aud"].map(lambda x:money(x,source_currency="AUD"))
+        st.dataframe(pdf[["brain","asset_id","quantity","Entry","Cost","add_count","opened_at"]].rename(columns={"brain":"Brain","asset_id":"Asset","add_count":"Adds"}),use_container_width=True,hide_index=True)
+    else: st.caption("No open paper positions yet.")
+    section("Recent paper trades")
+    if snapshot.paper_trades:
+        tdf=pd.DataFrame(snapshot.paper_trades)
+        tdf["Price"]=tdf["price_aud"].map(lambda x:money(x,source_currency="AUD"))
+        tdf["Notional"]=tdf["notional_aud"].map(lambda x:money(x,source_currency="AUD"))
+        st.dataframe(tdf[["executed_at","brain","asset_id","side","Notional","Price","reason"]].rename(columns={"executed_at":"Time","brain":"Brain","asset_id":"Asset","side":"Side","reason":"Reason"}),use_container_width=True,hide_index=True)
 
 elif selection=="Strategy Lab":
-    st.markdown('<div class="locked"><b>Strategy Lab scaffold is restored.</b><br>Challenger strategies are not active yet. The next implementation will run experiments against durable V22 evidence with strict train / validation / holdout separation rather than tuning on live results.</div>',unsafe_allow_html=True)
-    section("Required gates")
+    st.markdown('<div class="notice"><b>Four deterministic challenger brains are active in paper mode.</b><br>They all receive the same V22 evidence and equal capital. The contest measures decision quality and capital use rather than allowing different wallet sizes to distort results.</div>',unsafe_allow_html=True)
     st.dataframe(pd.DataFrame([
-        {"Gate":"Historical episode memory","State":"NEXT"},
-        {"Gate":"Outcome measurement","State":"NEXT"},
-        {"Gate":"Train / validation / holdout split","State":"PLANNED"},
-        {"Gate":"Challenger promotion rules","State":"PLANNED"},
+        {"Brain":"Balanced Evidence","Entry logic":"3 of 4 objective confirmations","Capital rule":"1.5% probe · max 6% asset"},
+        {"Brain":"Trend Guardian","Entry logic":"Trend UP + volume not DOWN","Capital rule":"1.5% probe · confirmation adds only"},
+        {"Brain":"Breakout Scout","Entry logic":"BREAKOUT + volume UP","Capital rule":"Never average down"},
+        {"Brain":"Flow Tracker","Entry logic":"Volume UP + elevated participation + trend not DOWN","Capital rule":"≥70% cash reserve"},
+    ]),use_container_width=True,hide_index=True)
+    section("Risk Governor")
+    st.dataframe(pd.DataFrame([
+        {"Rule":"Initial probe","Limit":"1.5% of starting capital"},
+        {"Rule":"Scale-in tranche","Limit":"1.0% · max 2 adds"},
+        {"Rule":"Single asset","Limit":"6% maximum"},
+        {"Rule":"Total deployed","Limit":"30% maximum"},
+        {"Rule":"Cash reserve","Limit":"70% minimum"},
+        {"Rule":"Open positions","Limit":"6 maximum"},
+        {"Rule":"Hard paper stop","Limit":"5% below average entry"},
+        {"Rule":"Learning","Limit":"May reduce size; cannot exceed 100% baseline"},
     ]),use_container_width=True,hide_index=True)
 
 elif selection=="Performance Lab":
-    c1,c2=st.columns(2)
-    with c1:metric_card("Episodes",str(len(snapshot.episodes)),"Durable learning episodes")
-    with c2:metric_card("Measured outcomes",str(len(snapshot.outcomes)),"Outcome rows, not subjective grades")
-    section("Recorded outcomes")
-    if snapshot.outcomes:
-        odf=pd.DataFrame(snapshot.outcomes)
-        st.dataframe(odf[[c for c in ["asset_id","horizon","measured_at","metrics_json","source"] if c in odf]],use_container_width=True,hide_index=True)
-    else:st.info("No episode outcomes have been measured yet. This is the next learning milestone.")
+    c1,c2,c3=st.columns(3)
+    with c1:metric_card("Paper trades",str(len(snapshot.paper_trades)),"Fresh V22 competition only")
+    with c2:metric_card("Closed trades",str(sum(int(fnum(x.get("trades_closed"))) for x in snapshot.paper_brains)),"Measured exits")
+    with c3:metric_card("Learning records",str(len(snapshot.paper_lessons)),"Outcome-driven, not confidence scores")
+    section("Brain performance")
+    if snapshot.paper_brains:
+        rows=[]
+        for b in snapshot.paper_brains:
+            closed=int(fnum(b.get("trades_closed")));wins=int(fnum(b.get("wins")))
+            rows.append({"Brain":b.get("name"),"Closed":closed,"Wins":wins,"Losses":int(fnum(b.get("losses"))),
+                         "Win rate %":round(100*wins/max(1,closed),1),"Realised P/L AUD":money(b.get("realised_pnl_aud"),source_currency="AUD"),
+                         "Risk multiplier":f"{100*fnum(b.get('risk_multiplier')):.0f}%"})
+        st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+    else: st.caption("Competition waiting for its first scheduled run.")
+    section("Measured learning")
+    if snapshot.paper_lessons:
+        ldf=pd.DataFrame(snapshot.paper_lessons)
+        st.dataframe(ldf[[c for c in ["created_at","brain","sample_size","win_rate","avg_return_pct","previous_risk_multiplier","proposed_risk_multiplier","state","reason"] if c in ldf]],use_container_width=True,hide_index=True)
+    else: st.caption("A brain needs at least 8 closed trades before sizing can adapt.")
 
 elif selection=="Learning Evidence":
     c1,c2,c3=st.columns(3)
@@ -440,7 +487,12 @@ elif selection=="Learning Evidence":
     section("Episodes")
     if snapshot.episodes:
         edf=pd.DataFrame(snapshot.episodes);st.dataframe(edf,use_container_width=True,hide_index=True)
-    else:st.markdown('<div class="notice">The durable episode tables are ready but the episode/outcome learning loop has not been activated. This is now the highest-priority intelligence build.</div>',unsafe_allow_html=True)
+    else:st.markdown('<div class="notice">Market episode memory remains available for the broader intelligence layer. The paper brains now also learn from their own measured closed-trade outcomes through bounded risk adaptation.</div>',unsafe_allow_html=True)
+    section("Paper-brain learning evidence")
+    if snapshot.paper_decisions:
+        ddf=pd.DataFrame(snapshot.paper_decisions)
+        st.dataframe(ddf[[c for c in ["observed_at","brain","asset_id","action","risk_approved","requested_notional_aud","approved_notional_aud","reason"] if c in ddf]],use_container_width=True,hide_index=True)
+    else: st.caption("No paper decisions recorded yet.")
     if snapshot.semantic_memory:
         section("Semantic memory candidates")
         mdf=pd.DataFrame(snapshot.semantic_memory);st.dataframe(mdf[[c for c in ["memory_type","source_id","text_content","created_at","embedded_at"] if c in mdf]],use_container_width=True,hide_index=True)
@@ -477,7 +529,8 @@ elif selection=="Settings":
         {"Component":"GitHub Actions","Role":"5m / 15m runtime","State":"LIVE"},
         {"Component":"Deterministic Brain","Role":"Evidence + observations","State":"LIVE"},
         {"Component":"Specialist AI","Role":"Escalated reasoning","State":"OFF"},
-        {"Component":"Trading execution","Role":"Action layer","State":"LOCKED"},
+        {"Component":"Paper trading","Role":"Fresh competing brains + bounded learning","State":"ACTIVE" if snapshot.paper_brains else "INSTALLED"},
+        {"Component":"Live trading execution","Role":"Real-money action layer","State":"LOCKED"},
         {"Component":"Restate / production orchestrator","Role":"Future durable orchestration","State":"NOT ACTIVATED"},
     ]),use_container_width=True,hide_index=True)
     section("Portfolio configuration")

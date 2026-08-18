@@ -1,0 +1,50 @@
+{
+  "release": "22.11.0",
+  "name": "Fresh Paper Brains & Bounded Learning",
+  "upload_file_count_before_reports": 12,
+  "paper_only": true,
+  "live_execution": "LOCKED",
+  "starting_cash_aud_per_brain": 100000,
+  "brains": [
+    "Balanced Evidence",
+    "Trend Guardian",
+    "Breakout Scout",
+    "Flow Tracker"
+  ],
+  "risk_policy": {
+    "initial_probe_pct": 1.5,
+    "confirmation_add_pct": 1.0,
+    "max_adds": 2,
+    "max_single_asset_pct": 6.0,
+    "max_total_deployed_pct": 30.0,
+    "min_cash_reserve_pct": 70.0,
+    "max_open_positions": 6,
+    "hard_paper_stop_pct": 5.0,
+    "average_down": false
+  },
+  "learning_policy": {
+    "minimum_closed_trades": 8,
+    "can_reduce_risk": true,
+    "can_restore_toward_baseline": true,
+    "can_exceed_baseline": false
+  },
+  "workflow": {
+    "name": "V22 Paper Brain Competition",
+    "schedule_utc": "12,27,42,57 * * * *",
+    "purpose": "runs five minutes after scheduled 15-minute market observations"
+  },
+  "files": [
+    ".github/workflows/paper_competition_15m.yml",
+    "app.py",
+    "README_V22_11.md",
+    "UPLOAD_INSTRUCTIONS_V22_11.txt",
+    "scripts/v22_paper_competition.py",
+    "v22/__init__.py",
+    "v22/migrations/005_paper_trading_postgres.sql",
+    "v22/migrations/005_paper_trading_sqlite.sql",
+    "v22/trading/__init__.py",
+    "v22/trading/competition.py",
+    "v22/tests/test_stage11_paper_trading.py",
+    "v22/ui/neon_reader.py"
+  ]
+}

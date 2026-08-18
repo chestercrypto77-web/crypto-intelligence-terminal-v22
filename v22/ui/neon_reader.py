@@ -19,6 +19,11 @@ class BrainSnapshot:
     outcomes: list[dict[str, Any]]
     ai_calls: list[dict[str, Any]]
     semantic_memory: list[dict[str, Any]]
+    paper_brains: list[dict[str, Any]]
+    paper_positions: list[dict[str, Any]]
+    paper_trades: list[dict[str, Any]]
+    paper_decisions: list[dict[str, Any]]
+    paper_lessons: list[dict[str, Any]]
 
 
 def resolve_database_url(streamlit_secrets: Any | None = None) -> str | None:
@@ -215,6 +220,77 @@ def load_latest_coverage(conn: Any, cycle_id: str) -> list[dict[str, Any]]:
     )
 
 
+
+def _table_exists(conn: Any, table_name: str) -> bool:
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT to_regclass(%s)", (f"public.{table_name}",))
+            row = cur.fetchone()
+            if isinstance(row, dict):
+                return bool(next(iter(row.values())))
+            return bool(row[0]) if row else False
+    except Exception:
+        return False
+
+
+def load_paper_brains(conn: Any, limit: int = 20) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "paper_brains"):
+        return []
+    return _fetch_all(conn, """
+        SELECT b.brain_id::text AS brain_id,b.name,b.strategy_key,b.cash_aud,b.realised_pnl_aud,
+               b.risk_multiplier,b.trades_closed,b.wins,b.losses,c.starting_cash_aud,c.status AS competition_status
+          FROM paper_brains b JOIN paper_competitions c ON c.competition_id=b.competition_id
+         ORDER BY b.name LIMIT %s
+    """, (limit,))
+
+
+def load_paper_positions(conn: Any, limit: int = 100) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "paper_positions"):
+        return []
+    return _fetch_all(conn, """
+        SELECT p.position_id::text AS position_id,p.brain_id::text AS brain_id,b.name AS brain,
+               p.asset_id,p.quantity,p.avg_entry_price_aud,p.cost_basis_aud,p.opened_at,
+               p.updated_at,p.status,p.add_count,p.last_price_aud,p.closed_at
+          FROM paper_positions p JOIN paper_brains b ON b.brain_id=p.brain_id
+         ORDER BY p.updated_at DESC LIMIT %s
+    """, (limit,))
+
+
+def load_paper_trades(conn: Any, limit: int = 250) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "paper_trades"):
+        return []
+    return _fetch_all(conn, """
+        SELECT t.trade_id::text AS trade_id,t.brain_id::text AS brain_id,b.name AS brain,
+               t.asset_id,t.side,t.quantity,t.price_aud,t.notional_aud,t.executed_at,t.reason,t.cash_after_aud
+          FROM paper_trades t JOIN paper_brains b ON b.brain_id=t.brain_id
+         ORDER BY t.executed_at DESC LIMIT %s
+    """, (limit,))
+
+
+def load_paper_decisions(conn: Any, limit: int = 250) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "paper_trade_decisions"):
+        return []
+    return _fetch_all(conn, """
+        SELECT d.decision_id::text AS decision_id,d.brain_id::text AS brain_id,b.name AS brain,
+               d.asset_id,d.action,d.reason,d.risk_approved,d.requested_notional_aud,
+               d.approved_notional_aud,d.price_aud,d.observed_at
+          FROM paper_trade_decisions d JOIN paper_brains b ON b.brain_id=d.brain_id
+         ORDER BY d.observed_at DESC LIMIT %s
+    """, (limit,))
+
+
+def load_paper_lessons(conn: Any, limit: int = 100) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "paper_lessons"):
+        return []
+    return _fetch_all(conn, """
+        SELECT l.lesson_id::text AS lesson_id,l.brain_id::text AS brain_id,b.name AS brain,
+               l.sample_size,l.wins,l.losses,l.win_rate,l.avg_return_pct,l.previous_risk_multiplier,
+               l.proposed_risk_multiplier,l.state,l.reason,l.created_at
+          FROM paper_lessons l JOIN paper_brains b ON b.brain_id=l.brain_id
+         ORDER BY l.created_at DESC LIMIT %s
+    """, (limit,))
+
+
 def load_snapshot(database_url: str) -> BrainSnapshot:
     with readonly_connection(database_url) as conn:
         return BrainSnapshot(
@@ -229,4 +305,9 @@ def load_snapshot(database_url: str) -> BrainSnapshot:
             outcomes=load_outcomes(conn),
             ai_calls=load_ai_calls(conn),
             semantic_memory=load_semantic_memory(conn),
+            paper_brains=load_paper_brains(conn),
+            paper_positions=load_paper_positions(conn),
+            paper_trades=load_paper_trades(conn),
+            paper_decisions=load_paper_decisions(conn),
+            paper_lessons=load_paper_lessons(conn),
         )
