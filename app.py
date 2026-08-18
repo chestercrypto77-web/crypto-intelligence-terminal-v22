@@ -6,6 +6,7 @@ from pathlib import Path
 import html
 import json
 import math
+import urllib.request
 
 import pandas as pd
 import streamlit as st
@@ -19,7 +20,7 @@ from v22.ui.neon_reader import (
 )
 
 APP_NAME = "Crypto Intelligence Terminal"
-APP_VERSION = "22.10-platform-bridge"
+APP_VERSION = "22.10.2-aud-charcoal"
 ROOT = Path(__file__).resolve().parent
 HOLDINGS_FILE = ROOT / "config" / "portfolio_holdings.json"
 
@@ -27,20 +28,27 @@ st.set_page_config(page_title=APP_NAME, page_icon="◈", layout="wide", initial_
 
 CSS = r"""
 <style>
-:root { --panel:#171c23; --panel2:#1d232c; --line:#2a323d; --muted:#91a0b2; --text:#f4f7fb; --good:#49d17d; --bad:#ff6f76; --watch:#67a9ff; --fade:#f3a65a; --flat:#e4c45c; }
+:root { --panel:#171c23; --panel2:#1d232c; --line:#2a323d; --muted:#aab7c7; --text:#f4f7fb; --good:#49d17d; --bad:#ff6f76; --watch:#67a9ff; --fade:#f3a65a; --flat:#e4c45c; }
+html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"], .stApp {background:#11161c !important;color:var(--text) !important;}
+[data-testid="stHeader"] {background:rgba(17,22,28,.96) !important;}
 .block-container {max-width:1550px;padding-top:1.2rem;padding-bottom:3rem;}
-[data-testid="stSidebar"] {background:#14191f;border-right:1px solid var(--line);}
+[data-testid="stSidebar"] {background:#14191f !important;border-right:1px solid var(--line);}
 [data-testid="stSidebar"] .block-container {padding-top:1rem;}
-.term-kicker{font-size:.70rem;text-transform:uppercase;letter-spacing:.16em;color:#7ea8dc;font-weight:800}
-.term-title{font-size:2rem;font-weight:850;margin:.08rem 0 .12rem;color:var(--text)}
-.term-sub{color:var(--muted);font-size:.92rem;margin-bottom:1.05rem}
-.section-title{font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:#a7b5c7;font-weight:850;margin:1.25rem 0 .55rem}
+[data-testid="stSidebar"] * {color:#dce4ee;}
+[data-testid="stMarkdownContainer"] p, [data-testid="stCaptionContainer"], .stCaption {color:#b6c1cf !important;}
+h1,h2,h3,h4,h5,h6 {color:#f5f7fb !important;}
+label, [data-testid="stWidgetLabel"] {color:#dfe7f0 !important;}
+[data-testid="stDataFrame"] {border:1px solid #2a323d;border-radius:10px;overflow:hidden;}
+.term-kicker{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:#8ab8ef;font-weight:850}
+.term-title{font-size:2rem;font-weight:900;margin:.08rem 0 .12rem;color:#ffffff !important}
+.term-sub{color:#c0cad7;font-size:.94rem;margin-bottom:1.05rem;font-weight:500}
+.section-title{font-size:.76rem;letter-spacing:.15em;text-transform:uppercase;color:#d5deea;font-weight:900;margin:1.25rem 0 .55rem}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:13px;padding:14px 15px;height:100%;}
-.card-label{font-size:.67rem;letter-spacing:.10em;text-transform:uppercase;color:#8292a5;font-weight:750}
+.card-label{font-size:.68rem;letter-spacing:.10em;text-transform:uppercase;color:#a8b7c9;font-weight:850}
 .card-value{font-size:1.28rem;font-weight:850;color:#fff;margin:.18rem 0}
-.card-note{font-size:.78rem;color:#92a0b2}
+.card-note{font-size:.78rem;color:#b2bdca}
 .asset-row{display:grid;grid-template-columns:1.1fr .8fr .8fr .8fr 1fr 1.1fr;gap:10px;align-items:center;background:#171c23;border:1px solid #29313c;border-radius:11px;padding:10px 12px;margin:.34rem 0}
-.asset-name{font-weight:820;color:#f5f7fb}.asset-sub{font-size:.72rem;color:#8795a7}.label{font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;color:#7f8da0}.value{font-weight:760;color:#ecf1f7}
+.asset-name{font-weight:850;color:#ffffff}.asset-sub{font-size:.73rem;color:#a9b6c6}.label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb0c4;font-weight:800}.value{font-weight:800;color:#f3f7fb}
 .signal-up{color:var(--good);font-weight:850}.signal-down{color:var(--bad);font-weight:850}.signal-watch{color:var(--watch);font-weight:850}.signal-fade{color:var(--fade);font-weight:850}.signal-flat{color:var(--flat);font-weight:850}.signal-muted{color:#9aa7b6;font-weight:750}
 .pill{display:inline-block;border:1px solid #374250;border-radius:999px;padding:.10rem .45rem;font-size:.69rem;color:#c4cfdb;background:#1b222a}.pill-good{border-color:#2d6c49;color:#6ee59c}.pill-warn{border-color:#735e2c;color:#f1cd72}.pill-bad{border-color:#73373b;color:#ff9298}
 .notice{background:#171d24;border:1px solid #2b3541;border-radius:12px;padding:12px 14px;color:#c7d0da}.locked{background:#181b20;border:1px dashed #48515c;border-radius:12px;padding:18px;color:#aeb8c4}
@@ -70,11 +78,47 @@ def fmt_num(v, decimals=2) -> str:
     return f"{x:.{decimals}f}"
 
 
-def money(v) -> str:
-    x=fnum(v)
-    if abs(x)>=1_000_000:return f"US${x/1_000_000:.2f}M"
-    if abs(x)>=1_000:return f"US${x/1_000:.1f}K"
-    return f"US${x:,.2f}"
+AUD_FALLBACK_PER_USD = 1.4092
+
+@st.cache_data(ttl=21600, show_spinner=False)
+def aud_per_usd() -> tuple[float, str]:
+    # Display conversion only. Raw V22 evidence remains untouched in Neon.
+    try:
+        req = urllib.request.Request(
+            "https://api.frankfurter.dev/v2/rate/USD/AUD",
+            headers={"User-Agent": "Crypto-Intelligence-Terminal-V22/22.10.2"},
+        )
+        with urllib.request.urlopen(req, timeout=4) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        rate = fnum(payload.get("rate"))
+        if rate > 0:
+            return rate, "Frankfurter reference FX"
+    except Exception:
+        pass
+    return AUD_FALLBACK_PER_USD, "cached fallback FX"
+
+AUD_PER_USD, AUD_FX_SOURCE = aud_per_usd()
+
+def usd_to_aud(v) -> float:
+    return fnum(v) * AUD_PER_USD
+
+def money(v, *, source_currency="USD") -> str:
+    x = fnum(v)
+    if source_currency.upper() == "USD":
+        x = usd_to_aud(x)
+    if abs(x)>=1_000_000:return f"A${x/1_000_000:.2f}M"
+    if abs(x)>=1_000:return f"A${x/1_000:.1f}K"
+    return f"A${x:,.2f}"
+
+def aud_price_from_usd(v) -> str:
+    x = usd_to_aud(v)
+    if x >= 1_000:
+        return f"A${x:,.2f}"
+    if x >= 1:
+        return f"A${x:,.4f}"
+    if x >= 0.01:
+        return f"A${x:,.5f}"
+    return f"A${x:,.7f}"
 
 
 def signed(v) -> str:
@@ -206,6 +250,7 @@ with st.sidebar:
     ],label_visibility="collapsed")
     st.divider()
     st.caption("V22 Brain → Neon → read-only Streamlit")
+    st.caption(f"Display currency: AUD · FX {AUD_PER_USD:.4f}")
 
 st.markdown('<div class="term-kicker">Crypto Intelligence Terminal</div>',unsafe_allow_html=True)
 
@@ -302,16 +347,20 @@ elif selection=="Portfolio":
     for h in holdings:
         sym=str(h.get("symbol") or "").upper(); r=row_map.get(sym); tokens=fnum(h.get("tokens"))
         if r and r["Price"]>0:
-            v=tokens*r["Price"];observed_value+=v
-            observed.append({"Asset":sym,"Name":h.get("name"),"Tokens":tokens,"Price USD":r["Price"],"Value USD":v,"24h %":r["24h"],"Volume":r["Volume"],"Trend":r["Trend"],"Quality":"V22 observed"})
+            v_usd=tokens*r["Price"];observed_value+=v_usd
+            observed.append({"Asset":sym,"Name":h.get("name"),"Tokens":tokens,"Price AUD":usd_to_aud(r["Price"]),"Value AUD":usd_to_aud(v_usd),"24h %":r["24h"],"Volume":r["Volume"],"Trend":r["Trend"],"Quality":"V22 observed"})
         else:
             missing.append({"Asset":sym,"Name":h.get("name"),"Tokens":tokens,"Narrative":h.get("narrative"),"Status":"Not in current V22 observed universe"})
     c1,c2,c3=st.columns(3)
-    with c1:metric_card("Observed portfolio value",money(observed_value),"USD value for holdings currently covered by V22")
+    with c1:metric_card("Observed portfolio value",money(observed_value),f"AUD display · 1 USD = {AUD_PER_USD:.4f} AUD")
     with c2:metric_card("Holdings observed",f"{len(observed)}/{len(holdings)}","Unobserved positions are not silently estimated")
     with c3:metric_card("Portfolio intelligence","OBJECTIVE","No conviction score")
     section("Observed holdings")
-    if observed:st.dataframe(pd.DataFrame(observed),use_container_width=True,hide_index=True)
+    if observed:
+        odf=pd.DataFrame(observed)
+        odf["Price AUD"]=odf["Price AUD"].map(lambda x: aud_price_from_usd(fnum(x)/AUD_PER_USD))
+        odf["Value AUD"]=odf["Value AUD"].map(lambda x: money(fnum(x), source_currency="AUD"))
+        st.dataframe(odf,use_container_width=True,hide_index=True)
     section("Waiting for V22 coverage")
     if missing:
         st.caption("These are retained from your legacy holdings configuration. They will populate automatically when the V22 universe expands; the UI will not fetch a competing price feed just to fill the table.")
@@ -322,7 +371,7 @@ elif selection=="Markets":
     if not asset_rows:st.info("No current evidence is available.")
     else:
         df=pd.DataFrame([{k:v for k,v in r.items() if k!="reasons"} for r in asset_rows])
-        df["Price"]=df["Price"].map(lambda x:f"${x:,.6g}")
+        df["Price AUD"]=df.pop("Price").map(aud_price_from_usd)
         for c in ["15m","1h","4h","24h"]:df[c]=df[c].map(signed)
         st.dataframe(df,use_container_width=True,hide_index=True)
     section("How to read it")

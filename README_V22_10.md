@@ -10,3 +10,9 @@ The UI reads Neon in a read-only database session. It does not run market collec
 ## V22.10.1 Streamlit compatibility hotfix
 - Normalises legacy dictionary snapshots and current BrainSnapshot objects before rendering.
 - Prevents AttributeError during mixed-version/overlay deployments.
+
+## V22.10.2 AUD + Charcoal UI
+- Restores full dark-charcoal Streamlit theme so headings, captions, widgets and tables remain readable.
+- Converts all displayed crypto prices and portfolio values from stored USD evidence to AUD.
+- Uses a cached no-key USD/AUD reference lookup for display only; raw Neon evidence is not rewritten.
+- Falls back to 1 USD = 1.4092 AUD if the FX lookup is temporarily unavailable.

@@ -1,6 +1,6 @@
 {
-  "currency": "USD",
-  "source_note": "Migrated from legacy terminal holdings; subjective conviction fields intentionally removed.",
+  "currency": "AUD",
+  "source_note": "Migrated from legacy terminal holdings; subjective conviction fields intentionally removed. V22 raw evidence may be USD; Streamlit converts monetary display values to AUD.",
   "holdings": [
     {
       "symbol": "BTC",

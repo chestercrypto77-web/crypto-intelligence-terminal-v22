@@ -1,5 +1,5 @@
 {
-  "release": "22.10.1",
+  "release": "22.10.2",
   "base": "V22.9 + V22 Streamlit Foundation",
   "upload_file_count": 8,
   "functional_files": [
@@ -44,5 +44,19 @@
       "sha256": "ccfcf8de169ab28561308dda37ac5e47113a6f6f62e6217f3cfb4549cceb893c"
     }
   ],
-  "hotfix": "Streamlit snapshot compatibility bridge"
+  "hotfix": "Streamlit snapshot compatibility bridge",
+  "ui_currency": "AUD",
+  "theme": "dark-charcoal",
+  "fx_fallback_aud_per_usd": 1.4092,
+  "changed_files": [
+    ".streamlit/config.toml",
+    "README_V22_10.md",
+    "UPLOAD_INSTRUCTIONS_V22_10_CLEAN.txt",
+    "V22_10_CLEAN_UPDATE_MANIFEST.json",
+    "V22_10_CLEAN_VALIDATION_REPORT.json",
+    "app.py",
+    "config/portfolio_holdings.json",
+    "scripts/release_smoke_test.py",
+    "v22/ui/neon_reader.py"
+  ]
 }

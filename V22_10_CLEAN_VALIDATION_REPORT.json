@@ -19,5 +19,8 @@
     "specialist_ai": "OFF"
   },
   "note": "This package is the replacement for the earlier oversized V22.10 archive.",
-  "hotfix": "22.10.1 snapshot compatibility bridge"
+  "hotfix": "22.10.1 snapshot compatibility bridge",
+  "ui_hotfix": "22.10.2 AUD + charcoal",
+  "aud_display_conversion": true,
+  "raw_neon_evidence_mutated": false
 }
