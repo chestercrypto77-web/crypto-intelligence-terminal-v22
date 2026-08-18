@@ -1,0 +1,50 @@
+{
+  "release": "V22 Streamlit Foundation",
+  "files": [
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "8899244c867af739ed8a2e934f36c023bf0ec84d8fba6cd588a65bd026fd5972",
+      "size": 220
+    },
+    {
+      "path": "README_V22_STREAMLIT.md",
+      "sha256": "afd6ca1d89aba29faf7f079bb7ec2cee53b9bb32b6c265e8c7e08a5d1a46cb82",
+      "size": 585
+    },
+    {
+      "path": "UPLOAD_INSTRUCTIONS_V22_STREAMLIT.txt",
+      "sha256": "64d72c4a29f6dfb5222c7a3c5315b36f270a7aa486152b4c22ae02d8e2023a1b",
+      "size": 520
+    },
+    {
+      "path": "V22_STREAMLIT_VALIDATION_REPORT.json",
+      "sha256": "422d54be66605b28f88429987773c00cf311eece700901b621478ec7cdd011cd",
+      "size": 618
+    },
+    {
+      "path": "app.py",
+      "sha256": "9fd3a513a36b10066bc6818fb994914a71fac54a4c90a089a77d4485faea20f5",
+      "size": 10238
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "94bf2cb5aab601e50a7d127d83f733f1dd66da2986823f180ca1d199494afd9c",
+      "size": 96
+    },
+    {
+      "path": "v22/tests/test_stage10_streamlit_foundation.py",
+      "sha256": "2ea3d732d9344586a6a77f4267f0eaee48065cd75f35fad377f2c0a3d61b2cd6",
+      "size": 742
+    },
+    {
+      "path": "v22/ui/__init__.py",
+      "sha256": "0d0973472f3587bba19c707c98cf8b94976863b9d8a8cee4767c6ee89457c570",
+      "size": 66
+    },
+    {
+      "path": "v22/ui/neon_reader.py",
+      "sha256": "1568888bf805dd4bd6f7922167677b12d8b04b590cc42a99ef67e2d2d5748f4b",
+      "size": 4723
+    }
+  ]
+}

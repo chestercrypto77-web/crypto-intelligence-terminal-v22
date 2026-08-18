@@ -1,0 +1,12 @@
+V22 STREAMLIT FOUNDATION
+
+1. Extract this ZIP.
+2. Upload all files/folders inside over the existing crypto-intelligence-terminal-v22 repo.
+3. Do not delete any existing V22 backend files.
+4. Commit to main: Install V22 Streamlit Foundation
+5. Return to Streamlit Create app.
+6. Repository: chestercrypto77-web/crypto-intelligence-terminal-v22
+7. Branch: main
+8. Main file path: app.py
+9. Open Advanced settings -> Secrets and add DATABASE_URL using the pooled Neon URL.
+10. Never commit the real DATABASE_URL to GitHub.

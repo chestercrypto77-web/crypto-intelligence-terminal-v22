@@ -1,0 +1,16 @@
+{
+  "release": "V22 Streamlit Foundation",
+  "base": "V22.9",
+  "tests": {"passed": 76, "failed": 0},
+  "checks": {
+    "root_app_py_exists": true,
+    "read_only_database_session": true,
+    "database_url_not_embedded": true,
+    "legacy_market_collection_removed_from_entrypoint": true,
+    "ai_calls_from_ui": 0,
+    "backend_workflow_files_changed": false,
+    "python_compile": true,
+    "clean_overlay_reconstruction": true
+  },
+  "note": "Streamlit executable was not installed in the build sandbox, so browser launch was not claimed. The app and helper modules compile and the full V22 pytest suite passes."
+}
