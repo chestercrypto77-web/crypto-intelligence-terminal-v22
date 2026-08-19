@@ -1,0 +1,9 @@
+V22.15 HYPERLIQUID TRADING LAB
+
+1. Extract this ZIP.
+2. Upload all files to the existing V22 repository as one clean upload.
+3. Suggested commit: Install V22.15 Hyperliquid Trading Lab foundation
+4. Streamlit can redeploy normally.
+5. For the local live laboratory, use START_HYPERLIQUID_LAB.bat from the extracted folder.
+6. Existing DATABASE_URL is reused through .env.local. Do not paste that secret into chat.
+7. Execution is DISABLED in this release. No Hyperliquid account/API key is required yet.

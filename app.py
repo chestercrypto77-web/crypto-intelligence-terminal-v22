@@ -20,7 +20,7 @@ from v22.ui.neon_reader import (
 )
 
 APP_NAME = "Crypto Intelligence Terminal"
-APP_VERSION = "22.13-realtime-poc"
+APP_VERSION = "22.15-hyperliquid-trading-lab"
 ROOT = Path(__file__).resolve().parent
 HOLDINGS_FILE = ROOT / "config" / "portfolio_holdings.json"
 
@@ -260,7 +260,7 @@ with st.sidebar:
     st.caption(f"V22 Platform · {APP_VERSION}")
     st.divider()
     selection=st.radio("Navigation",[
-        "Today","Realtime Feed","Portfolio","Markets","Watch","Research",
+        "Today","Hyperliquid Lab","Realtime Feed","Portfolio","Markets","Watch","Research",
         "Trading Desk","Strategy Lab","Performance Lab","Learning Evidence","Brain Audit","Settings"
     ],label_visibility="collapsed")
     st.divider()
@@ -315,6 +315,11 @@ if isinstance(snapshot, dict):
         "realtime_states": ("realtime_states",),
         "realtime_signals": ("realtime_signals",),
         "realtime_gaps": ("realtime_gaps",),
+        "hl_sessions": ("hl_sessions",),
+        "hl_provider": ("hl_provider",),
+        "hl_trades": ("hl_trades",),
+        "hl_books": ("hl_books",),
+        "hl_signals": ("hl_signals",),
     }
     for attr, keys in aliases.items():
         value = []
@@ -334,6 +339,7 @@ micro=latest_cycle(snapshot.cycles,"MICRO_5M"); market=latest_cycle(snapshot.cyc
 
 TITLES={
     "Today":("Today","Your five-minute view of what the V22 Brain is seeing now."),
+    "Hyperliquid Lab":("Hyperliquid Trading Lab","Live market microstructure laboratory: trades, order book, flow alignment and measured setups."),
     "Realtime Feed":("Realtime Feed","Proof that the market is being observed continuously, with live provenance, coverage and gap truth."),
     "Portfolio":("Portfolio","Your holdings overlaid with the objective V22 evidence currently available."),
     "Markets":("Markets","The live V22 observed universe: price movement, volume, structure and anomaly state."),
@@ -378,6 +384,54 @@ if selection=="Today":
         render_attention(r,h.get("name",""),h.get("narrative",""))
     section("Runtime confidence")
     st.caption(f"{recent_complete}/12 most recent cycles are COMPLETED. Brain truth is read from Neon, not inferred from GitHub's green tick.")
+
+
+elif selection=="Hyperliquid Lab":
+    session=snapshot.hl_sessions[0] if snapshot.hl_sessions else {}
+    provider=snapshot.hl_provider[0] if snapshot.hl_provider else {}
+    now=pd.Timestamp.now(tz="UTC")
+    lm=pd.to_datetime(provider.get("last_message_at"),utc=True,errors="coerce")
+    age=(now-lm).total_seconds() if not pd.isna(lm) else None
+    recent_trades=snapshot.hl_trades
+    recent_books=snapshot.hl_books
+    recent_signals=snapshot.hl_signals
+    c1,c2,c3,c4=st.columns(4)
+    with c1:metric_card("Hyperliquid feed",str(provider.get("status") or "NOT STARTED"),f"Message age {age:.1f}s" if age is not None else "Run local lab")
+    with c2:metric_card("Markets","4","BTC · ETH · SOL · HYPE")
+    with c3:metric_card("Raw events",f"{len(recent_trades)} trades",f"{len(recent_books)} book snapshots loaded")
+    with c4:metric_card("Execution","DISABLED","V22.15 observation foundation")
+    st.markdown('<div class="notice"><b>Trading Laboratory:</b> mainnet public Hyperliquid data is used for real market conditions. V22.15 records objective trade flow and L2 book structure. Testnet execution is the next gated layer after the live feed is proven.</div>',unsafe_allow_html=True)
+    section("Live microstructure")
+    latest_book={}
+    for b in recent_books:
+        a=str(b.get("asset_id"))
+        if a not in latest_book:latest_book[a]=b
+    latest_trade={}
+    for t in recent_trades:
+        a=str(t.get("asset_id"))
+        if a not in latest_trade:latest_trade[a]=t
+    rows=[]
+    for asset in ["BTC","ETH","SOL","HYPE"]:
+        b=latest_book.get(asset,{});t=latest_trade.get(asset,{})
+        imb=fnum(b.get("imbalance")); bias="BUY" if imb>=.62 else ("SELL" if imb<=.38 else "BALANCED")
+        rows.append({"Asset":asset,"Last":aud_price_from_usd(t.get("price")) if t else "—",
+                     "Spread":f"{fnum(b.get('spread_bps')):.2f} bps" if b else "—",
+                     "Book imbalance":f"{imb*100:.1f}%" if b else "—","Book bias":bias if b else "—",
+                     "Last trade side":t.get("side") or "—","Updated":fmt_time(t.get("event_time") or b.get("event_time"))})
+    st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+    section("Objective setup events")
+    if recent_signals:
+        st.dataframe(pd.DataFrame([{"Time":fmt_time(x.get("event_time")),"Asset":x.get("asset_id"),"Direction":x.get("direction"),
+                                   "Setup":x.get("signal_type"),"Price AUD":aud_price_from_usd(x.get("price")),
+                                   "Book imbalance":f"{100*fnum(x.get('book_imbalance')):.1f}%",
+                                   "Buy flow":f"{100*fnum(x.get('buy_flow_share')):.1f}%","Execution":"LOCKED"}
+                                  for x in recent_signals[:40]]),use_container_width=True,hide_index=True)
+    else: st.caption("No objective flow + order-book alignment event recorded yet.")
+    section("Recent tape")
+    if recent_trades:
+        st.dataframe(pd.DataFrame([{"Time":fmt_time(x.get("event_time")),"Asset":x.get("asset_id"),"Side":x.get("side"),
+                                   "Price AUD":aud_price_from_usd(x.get("price")),"Size":x.get("size")}
+                                  for x in recent_trades[:50]]),use_container_width=True,hide_index=True)
 
 elif selection=="Realtime Feed":
     if not snapshot.realtime_sessions:

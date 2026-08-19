@@ -1,0 +1,13 @@
+{
+  "release": "22.15.0",
+  "status": "BUILD_VALIDATION_PASSED_LIVE_FEED_PENDING_ON_USER_PC",
+  "tests": "100 passed",
+  "release_smoke": "PASSED",
+  "python_compile": "PASSED",
+  "fresh_sqlite_migration": "PASSED",
+  "protected_data_scan": "PASSED",
+  "zip_integrity": "PASSED",
+  "live_hyperliquid_socket": "NOT_CLAIMED_FROM_BUILD_CONTAINER",
+  "notes": "Live socket continuity must be proven on the user's desktop. No testnet credentials or funds are required in V22.15.",
+  "upload_file_count": 21
+}

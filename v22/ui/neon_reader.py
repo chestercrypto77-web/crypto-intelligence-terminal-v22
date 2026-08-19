@@ -33,6 +33,11 @@ class BrainSnapshot:
     realtime_states: list[dict[str, Any]]
     realtime_signals: list[dict[str, Any]]
     realtime_gaps: list[dict[str, Any]]
+    hl_sessions: list[dict[str, Any]]
+    hl_provider: list[dict[str, Any]]
+    hl_trades: list[dict[str, Any]]
+    hl_books: list[dict[str, Any]]
+    hl_signals: list[dict[str, Any]]
 
 
 def resolve_database_url(streamlit_secrets: Any | None = None) -> str | None:
@@ -403,8 +408,25 @@ def load_realtime_gaps(conn: Any, limit: int = 100) -> list[dict[str, Any]]:
           FROM realtime_gap_events ORDER BY gap_start DESC LIMIT %s
     """, (limit,))
 
+
+def load_hl_lab(conn: Any) -> dict[str,list[dict[str,Any]]]:
+    out={"sessions":[],"provider":[],"trades":[],"books":[],"signals":[]}
+    tables={"sessions":"hl_lab_sessions","provider":"hl_lab_provider_health","trades":"hl_lab_trades","books":"hl_lab_books","signals":"hl_lab_signals"}
+    if _table_exists(conn,tables["sessions"]):
+        out["sessions"]=_fetch_all(conn,"SELECT * FROM hl_lab_sessions ORDER BY started_at DESC LIMIT 10")
+    if _table_exists(conn,tables["provider"]):
+        out["provider"]=_fetch_all(conn,"SELECT * FROM hl_lab_provider_health ORDER BY updated_at DESC LIMIT 20")
+    if _table_exists(conn,tables["trades"]):
+        out["trades"]=_fetch_all(conn,"SELECT * FROM hl_lab_trades ORDER BY event_time DESC LIMIT 120")
+    if _table_exists(conn,tables["books"]):
+        out["books"]=_fetch_all(conn,"SELECT * FROM hl_lab_books ORDER BY event_time DESC LIMIT 120")
+    if _table_exists(conn,tables["signals"]):
+        out["signals"]=_fetch_all(conn,"SELECT * FROM hl_lab_signals ORDER BY event_time DESC LIMIT 100")
+    return out
+
 def load_snapshot(database_url: str) -> BrainSnapshot:
     with readonly_connection(database_url) as conn:
+        hl=load_hl_lab(conn)
         return BrainSnapshot(
             cycles=load_cycles(conn),
             evidence=load_recent_evidence(conn),
@@ -431,4 +453,9 @@ def load_snapshot(database_url: str) -> BrainSnapshot:
             realtime_states=load_realtime_states(conn),
             realtime_signals=load_realtime_signals(conn),
             realtime_gaps=load_realtime_gaps(conn),
+            hl_sessions=hl["sessions"],
+            hl_provider=hl["provider"],
+            hl_trades=hl["trades"],
+            hl_books=hl["books"],
+            hl_signals=hl["signals"],
         )

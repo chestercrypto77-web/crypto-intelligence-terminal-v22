@@ -1,0 +1,42 @@
+{
+  "release": "22.15.0",
+  "name": "Hyperliquid Trading Laboratory Foundation",
+  "active_direction": "Hyperliquid mainnet public realtime market laboratory + later testnet execution",
+  "generic_railway_render_path": "STOPPED",
+  "universe": [
+    "BTC",
+    "ETH",
+    "SOL",
+    "HYPE"
+  ],
+  "subscriptions": [
+    "trades",
+    "l2Book"
+  ],
+  "objective_signal": "60-second aggressive trade-flow + top-5 L2 depth imbalance alignment",
+  "execution_mode": "DISABLED",
+  "hyperliquid_account_required": false,
+  "hosting_cost_required": false,
+  "local_runtime": true,
+  "files": [
+    "app.py",
+    "README_V22_15.md",
+    "UPLOAD_INSTRUCTIONS_V22_15.txt",
+    "START_HYPERLIQUID_LAB.bat",
+    "requirements-hyperliquid-lab.txt",
+    "scripts/v22_hyperliquid_lab.py",
+    "v22/__init__.py",
+    "v22/migrations/008_hyperliquid_lab_sqlite.sql",
+    "v22/migrations/008_hyperliquid_lab_postgres.sql",
+    "v22/hyperliquid_lab/__init__.py",
+    "v22/hyperliquid_lab/config.py",
+    "v22/hyperliquid_lab/models.py",
+    "v22/hyperliquid_lab/provider.py",
+    "v22/hyperliquid_lab/repository.py",
+    "v22/hyperliquid_lab/engine.py",
+    "v22/hyperliquid_lab/execution.py",
+    "v22/hyperliquid_lab/service.py",
+    "v22/ui/neon_reader.py",
+    "v22/tests/test_stage15_hyperliquid_lab.py"
+  ]
+}
