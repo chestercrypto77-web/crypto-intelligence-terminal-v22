@@ -1,0 +1,19 @@
+V22.13 REALTIME OBSERVER POC — CLEAN UPDATE
+
+1. Extract the ZIP.
+2. GitHub -> crypto-intelligence-terminal-v22 -> main.
+3. Add file -> Upload files.
+4. Drag all extracted contents into the repository root together.
+5. Commit directly to main.
+
+Suggested commit:
+Install V22.13 realtime observer POC
+
+IMPORTANT
+- Do not delete the existing GitHub observer workflows yet. They remain the comparison/control path during the POC.
+- Do not reset Neon.
+- Do not reset the existing paper brains.
+- The realtime POC cannot place paper or live trades.
+- No new GitHub workflow file is required.
+
+After the upload, deploy the repository as a separate Railway service using the included railway.json / Dockerfile.realtime. The existing Streamlit deployment remains unchanged except for the new Realtime Feed page.

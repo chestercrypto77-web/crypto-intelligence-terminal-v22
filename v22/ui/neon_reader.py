@@ -26,6 +26,13 @@ class BrainSnapshot:
     paper_lessons: list[dict[str, Any]]
     paper_marks: list[dict[str, Any]]
     paper_outcomes: list[dict[str, Any]]
+    realtime_sessions: list[dict[str, Any]]
+    realtime_providers: list[dict[str, Any]]
+    realtime_assets: list[dict[str, Any]]
+    realtime_bars: list[dict[str, Any]]
+    realtime_states: list[dict[str, Any]]
+    realtime_signals: list[dict[str, Any]]
+    realtime_gaps: list[dict[str, Any]]
 
 
 def resolve_database_url(streamlit_secrets: Any | None = None) -> str | None:
@@ -319,6 +326,83 @@ def load_paper_trade_outcomes(conn: Any, limit: int = 150) -> list[dict[str, Any
          ORDER BY o.closed_at DESC LIMIT %s
     """, (limit,))
 
+
+def load_realtime_sessions(conn: Any, limit: int = 10) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "realtime_runtime_sessions"):
+        return []
+    return _fetch_all(conn, """
+        SELECT session_id::text AS session_id,instance_id,version,status,primary_provider,
+               secondary_provider,universe_json,started_at,last_heartbeat_at,stopped_at,
+               stop_reason,metrics_json
+          FROM realtime_runtime_sessions ORDER BY started_at DESC LIMIT %s
+    """, (limit,))
+
+
+def load_realtime_provider_health(conn: Any, limit: int = 20) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "realtime_provider_health"):
+        return []
+    return _fetch_all(conn, """
+        SELECT p.session_id::text AS session_id,p.provider,p.status,p.connected_at,
+               p.last_message_at,p.last_event_at,p.reconnects,p.scheduled_reconnects,
+               p.messages,p.max_message_gap_seconds,p.errors,p.last_error,p.updated_at
+          FROM realtime_provider_health p
+         ORDER BY p.updated_at DESC LIMIT %s
+    """, (limit,))
+
+
+def load_realtime_asset_health(conn: Any, limit: int = 200) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "realtime_asset_health"):
+        return []
+    return _fetch_all(conn, """
+        SELECT a.session_id::text AS session_id,a.asset_id,a.active_provider,
+               a.primary_last_message_at,a.secondary_last_message_at,a.last_trade_at,
+               a.last_bar_close_at,a.expected_minutes,a.live_minutes,a.coverage_pct,
+               a.max_message_gap_seconds,a.max_gap_seconds,a.failovers,a.status,a.updated_at
+          FROM realtime_asset_health a
+         ORDER BY a.updated_at DESC,a.asset_id LIMIT %s
+    """, (limit,))
+
+
+def load_realtime_bars(conn: Any, limit: int = 120) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "realtime_bars_1m"):
+        return []
+    return _fetch_all(conn, """
+        SELECT asset_id,bucket_start,provider,provenance,decision_eligible,open,high,low,close,
+               base_volume,quote_volume,signed_quote_volume,trades,source_latency_ms_avg,written_at
+          FROM realtime_bars_1m ORDER BY bucket_start DESC,asset_id LIMIT %s
+    """, (limit,))
+
+
+def load_realtime_states(conn: Any, limit: int = 240) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "realtime_timeframe_state"):
+        return []
+    return _fetch_all(conn, """
+        SELECT asset_id,timeframe,measured_at,window_minutes,change_pct,quote_volume,
+               signed_quote_volume,flow_share,participation_ratio,direction,volume_flow,
+               coverage_pct,provenance,decision_eligible,metadata_json
+          FROM realtime_timeframe_state ORDER BY measured_at DESC,asset_id,timeframe LIMIT %s
+    """, (limit,))
+
+
+def load_realtime_signals(conn: Any, limit: int = 100) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "realtime_signal_events"):
+        return []
+    return _fetch_all(conn, """
+        SELECT event_id::text AS event_id,session_id::text AS session_id,asset_id,event_type,
+               event_time,provider,provenance,decision_eligible,value,threshold,evidence_json
+          FROM realtime_signal_events ORDER BY event_time DESC LIMIT %s
+    """, (limit,))
+
+
+def load_realtime_gaps(conn: Any, limit: int = 100) -> list[dict[str, Any]]:
+    if not _table_exists(conn, "realtime_gap_events"):
+        return []
+    return _fetch_all(conn, """
+        SELECT gap_id::text AS gap_id,session_id::text AS session_id,asset_id,provider,
+               gap_start,gap_end,duration_seconds,reason,recovered_by,decision_eligible,created_at
+          FROM realtime_gap_events ORDER BY gap_start DESC LIMIT %s
+    """, (limit,))
+
 def load_snapshot(database_url: str) -> BrainSnapshot:
     with readonly_connection(database_url) as conn:
         return BrainSnapshot(
@@ -340,4 +424,11 @@ def load_snapshot(database_url: str) -> BrainSnapshot:
             paper_lessons=load_paper_lessons(conn),
             paper_marks=load_paper_marks(conn),
             paper_outcomes=load_paper_trade_outcomes(conn),
+            realtime_sessions=load_realtime_sessions(conn),
+            realtime_providers=load_realtime_provider_health(conn),
+            realtime_assets=load_realtime_asset_health(conn),
+            realtime_bars=load_realtime_bars(conn),
+            realtime_states=load_realtime_states(conn),
+            realtime_signals=load_realtime_signals(conn),
+            realtime_gaps=load_realtime_gaps(conn),
         )

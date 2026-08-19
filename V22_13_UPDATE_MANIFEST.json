@@ -1,0 +1,74 @@
+{
+  "release": "22.13.0",
+  "name": "Realtime Observer POC",
+  "purpose": "Prove continuous live market observation before replacing GitHub scheduled observers.",
+  "architecture": {
+    "runtime": "portable always-on Python container; Railway is the first proof host",
+    "primary_feed": "Binance Spot public WebSocket",
+    "secondary_feed": "Kraken Spot WebSocket v2 where mapped",
+    "database": "existing Neon durable memory",
+    "ui": "existing Streamlit plus Realtime Feed proof page",
+    "github_actions": "retained as control/CI during POC; not removed"
+  },
+  "poc_universe": [
+    "BTC",
+    "ETH",
+    "SOL",
+    "XRP",
+    "LINK",
+    "COTI"
+  ],
+  "timeframes": [
+    "1m",
+    "5m",
+    "15m",
+    "1h",
+    "4h"
+  ],
+  "provenance": [
+    "LIVE_STREAM",
+    "LIVE_DERIVED_IDLE",
+    "LIVE_FAILOVER",
+    "LIVE_MULTI_PROVIDER_TRANSITION"
+  ],
+  "decision_safety": {
+    "paper_brains_connected_to_realtime_poc": false,
+    "backfilled_data_can_trigger_decisions": false,
+    "mixed_provider_transition_can_trigger_decisions": false
+  },
+  "acceptance_defaults": {
+    "minimum_runtime_hours": 72,
+    "minimum_asset_coverage_pct": 99.5,
+    "maximum_raw_feed_gap_seconds": 15,
+    "maximum_missing_bar_gap_seconds": 60,
+    "maximum_heartbeat_age_seconds": 30,
+    "database_errors": 0,
+    "backfilled_decision_eligible_rows": 0
+  },
+  "files": [
+    "app.py",
+    "README_V22_13.md",
+    "REALTIME_POC_ACCEPTANCE.md",
+    "RAILWAY_DEPLOYMENT_V22_13.md",
+    "UPLOAD_INSTRUCTIONS_V22_13.txt",
+    "Dockerfile.realtime",
+    "railway.json",
+    "requirements-realtime.txt",
+    "scripts/v22_realtime_observer.py",
+    "scripts/v22_realtime_acceptance.py",
+    "v22/__init__.py",
+    "v22/migrations/007_realtime_observer_postgres.sql",
+    "v22/migrations/007_realtime_observer_sqlite.sql",
+    "v22/realtime/__init__.py",
+    "v22/realtime/config.py",
+    "v22/realtime/models.py",
+    "v22/realtime/engine.py",
+    "v22/realtime/providers.py",
+    "v22/realtime/repository.py",
+    "v22/realtime/service.py",
+    "v22/ui/neon_reader.py",
+    "v22/tests/test_stage13_realtime_observer.py",
+    "v22/tests/test_stage13_provider_parsers.py",
+    "v22/tests/test_stage13_deployment_contract.py"
+  ]
+}

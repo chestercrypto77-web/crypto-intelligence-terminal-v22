@@ -20,7 +20,7 @@ from v22.ui.neon_reader import (
 )
 
 APP_NAME = "Crypto Intelligence Terminal"
-APP_VERSION = "22.12-trade-journey-ui"
+APP_VERSION = "22.13-realtime-poc"
 ROOT = Path(__file__).resolve().parent
 HOLDINGS_FILE = ROOT / "config" / "portfolio_holdings.json"
 
@@ -260,7 +260,7 @@ with st.sidebar:
     st.caption(f"V22 Platform · {APP_VERSION}")
     st.divider()
     selection=st.radio("Navigation",[
-        "Today","Portfolio","Markets","Watch","Research",
+        "Today","Realtime Feed","Portfolio","Markets","Watch","Research",
         "Trading Desk","Strategy Lab","Performance Lab","Learning Evidence","Brain Audit","Settings"
     ],label_visibility="collapsed")
     st.divider()
@@ -308,6 +308,13 @@ if isinstance(snapshot, dict):
         "paper_lessons": ("paper_lessons",),
         "paper_marks": ("paper_marks",),
         "paper_outcomes": ("paper_outcomes",),
+        "realtime_sessions": ("realtime_sessions",),
+        "realtime_providers": ("realtime_providers",),
+        "realtime_assets": ("realtime_assets",),
+        "realtime_bars": ("realtime_bars",),
+        "realtime_states": ("realtime_states",),
+        "realtime_signals": ("realtime_signals",),
+        "realtime_gaps": ("realtime_gaps",),
     }
     for attr, keys in aliases.items():
         value = []
@@ -327,6 +334,7 @@ micro=latest_cycle(snapshot.cycles,"MICRO_5M"); market=latest_cycle(snapshot.cyc
 
 TITLES={
     "Today":("Today","Your five-minute view of what the V22 Brain is seeing now."),
+    "Realtime Feed":("Realtime Feed","Proof that the market is being observed continuously, with live provenance, coverage and gap truth."),
     "Portfolio":("Portfolio","Your holdings overlaid with the objective V22 evidence currently available."),
     "Markets":("Markets","The live V22 observed universe: price movement, volume, structure and anomaly state."),
     "Watch":("Watch","Assets that deserve attention because objective conditions changed or disagree."),
@@ -370,6 +378,82 @@ if selection=="Today":
         render_attention(r,h.get("name",""),h.get("narrative",""))
     section("Runtime confidence")
     st.caption(f"{recent_complete}/12 most recent cycles are COMPLETED. Brain truth is read from Neon, not inferred from GitHub's green tick.")
+
+elif selection=="Realtime Feed":
+    if not snapshot.realtime_sessions:
+        st.markdown('<div class="notice"><b>Realtime Observer POC is installed but has not written its first live session yet.</b><br>This page remains separate from paper-trading decisions until the continuous-feed acceptance test passes.</div>',unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame([
+            {"Acceptance test":"Primary feed heartbeat","Pass condition":"Age measured in seconds, no unexplained long gaps"},
+            {"Acceptance test":"1-minute coverage","Pass condition":"≥99.5% over the proof window for liquid assets"},
+            {"Acceptance test":"Failover truth","Pass condition":"Every provider switch recorded; no catch-up trades"},
+            {"Acceptance test":"Provenance","Pass condition":"Only LIVE_* evidence is decision eligible"},
+            {"Acceptance test":"Persistence","Pass condition":"Neon writes continue without silent data loss"},
+        ]),use_container_width=True,hide_index=True)
+    else:
+        session=snapshot.realtime_sessions[0];sid=str(session.get("session_id"));now=pd.Timestamp.now(tz="UTC")
+        providers=[x for x in snapshot.realtime_providers if str(x.get("session_id"))==sid]
+        assets=[x for x in snapshot.realtime_assets if str(x.get("session_id"))==sid]
+        hb=pd.to_datetime(session.get("last_heartbeat_at"),utc=True,errors="coerce")
+        heartbeat_age=(now-hb).total_seconds() if not pd.isna(hb) else 999999
+        live_assets=sum(1 for x in assets if str(x.get("status"))=="LIVE")
+        worst_gap=max([fnum(x.get("max_gap_seconds")) for x in assets] or [0])
+        avg_cov=sum(fnum(x.get("coverage_pct")) for x in assets)/max(1,len(assets))
+        c1,c2,c3,c4=st.columns(4)
+        with c1:metric_card("Realtime runtime",str(session.get("status") or "UNKNOWN"),f"Heartbeat {heartbeat_age:.1f}s ago")
+        with c2:metric_card("Live assets",f"{live_assets}/{len(assets)}","Current feed freshness")
+        with c3:metric_card("Live coverage",f"{avg_cov:.2f}%","Current POC session average")
+        with c4:metric_card("Largest gap",f"{worst_gap:.0f}s","Seconds, not workflow intervals")
+        st.markdown('<div class="notice"><b>POC boundary:</b> this realtime feed is observational only. It cannot trigger the paper brains yet. That gate stays closed until the measured coverage/reconnect test passes.</div>',unsafe_allow_html=True)
+        section("Provider heartbeat")
+        if providers:
+            rows=[]
+            for r in providers:
+                lm=pd.to_datetime(r.get("last_message_at"),utc=True,errors="coerce")
+                age=(now-lm).total_seconds() if not pd.isna(lm) else None
+                rows.append({"Provider":r.get("provider"),"Status":r.get("status"),"Message age":f"{age:.1f}s" if age is not None else "—",
+                             "Messages":r.get("messages"),"Max msg gap":f"{fnum(r.get('max_message_gap_seconds')):.1f}s",
+                             "Reconnects":r.get("reconnects"),"Planned rotations":r.get("scheduled_reconnects"),
+                             "Errors":r.get("errors"),"Last error":r.get("last_error") or ""})
+            st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+        section("Per-asset continuity")
+        if assets:
+            rows=[]
+            for r in sorted(assets,key=lambda x:str(x.get("asset_id"))):
+                rows.append({"Asset":r.get("asset_id"),"Feed":r.get("active_provider"),"Status":r.get("status"),
+                             "Coverage":f"{fnum(r.get('coverage_pct')):.2f}%","Max feed gap":f"{fnum(r.get('max_message_gap_seconds')):.1f}s",
+                             "Missing-bar gap":f"{fnum(r.get('max_gap_seconds')):.0f}s","Failovers":r.get("failovers"),"Last bar":fmt_time(r.get("last_bar_close_at")),"Last trade":fmt_time(r.get("last_trade_at"))})
+            st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+        section("Latest rolling timeframes")
+        latest={}
+        for r in snapshot.realtime_states:
+            key=(r.get("asset_id"),r.get("timeframe"))
+            if key not in latest:latest[key]=r
+        if latest:
+            rows=[]
+            for (asset,tf),r in sorted(latest.items()):
+                rows.append({"Asset":asset,"Window":tf,"Move":signed(r.get("change_pct")),"Direction":r.get("direction"),
+                             "Volume flow":r.get("volume_flow"),"Flow share":f"{100*fnum(r.get('flow_share')):+.1f}%",
+                             "Coverage":f"{fnum(r.get('coverage_pct')):.1f}%","Decision eligible":"YES" if r.get("decision_eligible") else "NO",
+                             "Provenance":r.get("provenance")})
+            st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+        section("Latest canonical 1-minute bars")
+        if snapshot.realtime_bars:
+            rows=[]
+            for r in snapshot.realtime_bars[:40]:
+                rows.append({"Minute":fmt_time(r.get("bucket_start")),"Asset":r.get("asset_id"),"Provider":r.get("provider"),
+                             "Price AUD":aud_price_from_usd(r.get("close")),"Trades":r.get("trades"),"Provenance":r.get("provenance"),
+                             "Eligible":"YES" if r.get("decision_eligible") else "NO","Latency ms":round(fnum(r.get("source_latency_ms_avg")),1) if r.get("source_latency_ms_avg") is not None else "—"})
+            st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+        if snapshot.realtime_signals:
+            section("Immediate objective events")
+            st.dataframe(pd.DataFrame([{"Time":fmt_time(x.get("event_time")),"Asset":x.get("asset_id"),"Event":x.get("event_type"),
+                                       "Value":x.get("value"),"Threshold":x.get("threshold"),"Provider":x.get("provider"),"Provenance":x.get("provenance")}
+                                      for x in snapshot.realtime_signals[:30]]),use_container_width=True,hide_index=True)
+        if snapshot.realtime_gaps:
+            section("Gap / provider-switch ledger")
+            st.dataframe(pd.DataFrame([{"Start":fmt_time(x.get("gap_start")),"Asset":x.get("asset_id"),"Provider":x.get("provider"),
+                                       "Seconds":x.get("duration_seconds"),"Reason":x.get("reason"),"Recovered by":x.get("recovered_by") or ""}
+                                      for x in snapshot.realtime_gaps[:30]]),use_container_width=True,hide_index=True)
 
 elif selection=="Portfolio":
     observed=[]; missing=[]; observed_value=0.0
@@ -593,7 +677,8 @@ elif selection=="Settings":
     st.dataframe(pd.DataFrame([
         {"Component":"Streamlit","Role":"Read-only workspace","State":"LIVE"},
         {"Component":"Neon","Role":"Durable Brain memory","State":"LIVE"},
-        {"Component":"GitHub Actions","Role":"5m / 15m runtime","State":"LIVE"},
+        {"Component":"GitHub Actions","Role":"Legacy scheduled observers + CI during POC","State":"LIVE / UNDER REPLACEMENT"},
+        {"Component":"Realtime observer","Role":"24/7 live market heartbeat","State":"POC LIVE" if snapshot.realtime_sessions else "INSTALLED"},
         {"Component":"Deterministic Brain","Role":"Evidence + observations","State":"LIVE"},
         {"Component":"Specialist AI","Role":"Escalated reasoning","State":"OFF"},
         {"Component":"Paper trading","Role":"Fresh competing brains + bounded learning","State":"ACTIVE" if snapshot.paper_brains else "INSTALLED"},
